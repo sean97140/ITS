@@ -1,0 +1,15 @@
+varlet
+setuptools
+psycopg2
+django-cloak
+pytz
+git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[logging]
+#elasticsearch
+#python3-ldap
+#celery
+-e git://github.com/PSU-OIT-ARC/djangocas.git#egg=djangocas
+#-e git://github.com/PSU-OIT-ARC/django-perms.git#egg=permissions
+mock
+model-mommy
+coverage
+flake8
