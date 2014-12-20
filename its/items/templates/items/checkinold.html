@@ -1,0 +1,24 @@
+<h3>Location</h3>
+{% if location_list %}
+    <ul>
+    {% for location in location_list %}
+        <li>{{ location }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No locations are available.</p>
+{% endif %}
+
+
+<h3>Category</h3>
+{% if category_list %}
+    <ul>
+    {% for category in category_list %}
+        <li>{{ category }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No categories are available.</p>
+{% endif %}
+	
+	

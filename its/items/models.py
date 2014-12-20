@@ -1,14 +1,20 @@
 import datetime
 from django.db import models
+from django import forms
 from django.utils import timezone
+from django.forms import ModelForm
 from its.users.models import User
+
 
 class Action(models.Model):
     action_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
+    machine_name = models.CharField(max_length=50, unique=True)
+    weight = models.IntegerField(default=0)
 	
     class Meta:
         db_table = "action"
+        ordering = ['-weight']
 		
     def __str__(self):
         return self.name
@@ -23,9 +29,10 @@ class Status(models.Model):
 	
     class Meta:
         db_table = "status"
-		
+        ordering = ['-pk']
+
     def __str__(self):
-        return self.status_id
+        return str(self.status_id)
 
 		
 class Location(models.Model):
@@ -56,19 +63,21 @@ class Item(models.Model):
     category = models.ForeignKey(Category)
     description = models.TextField()
     is_valuable = models.BooleanField(default=False)
-    possible_owner = models.ForeignKey(User, related_name='item_possible_owner')
+    possible_owner = models.ForeignKey(User, related_name='item_possible_owner', null=True)
     possible_owner_contacted = models.BooleanField(default=False)
-    returned_to = models.ForeignKey(User, related_name='item_returned_to')
-	
+    returned_to = models.ForeignKey(User, related_name='item_returned_to', null=True)
+    found_by = models.ForeignKey(User, related_name='item_found_by')
+    
+    
     class Meta:
         db_table = "item"
 		
     def __str__(self):
+        #import pdb; pdb.set_trace()
         return self.description
-	
-
-	
-
+		
+    def last_status(self):
+        return Status.objects.filter(item=self).last()
 	
 
 

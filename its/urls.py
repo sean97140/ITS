@@ -3,6 +3,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.conf import settings
 from .views import home
+from its.items import views as items
 
 admin.autodiscover()
 
@@ -14,6 +15,9 @@ urlpatterns = patterns(
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', home, name='home'),
+	url(r'^items/checkin$', items.checkin, name='index'),
+    url(r'^items/(?P<item_id>\d+)/$', items.printoff, name='printoff'),
+    #url(r'^items/(?P<pk>\d+)/$', items.printoff, name='printoff'),
 
 
     url(r'^cloak/', include('cloak.urls'))

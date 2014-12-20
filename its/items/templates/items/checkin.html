@@ -1,0 +1,22 @@
+<htmL>
+{% extends "base.html" %}
+<head>
+    {% block head %}
+    <script src="{{ STATIC_URL }}js/checkin.js"></script>
+    {% endblock %}
+</head> 
+
+<body>
+{% block body %}
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+	<table>
+    {{ form.as_table }}
+	</table>
+    <input type="submit" value="Submit" />
+</form>
+{% endblock %}
+{% endblock %}
+</body>
+</html>

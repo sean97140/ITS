@@ -153,6 +153,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     PROJECT_DIR("templates"),
+	#[os.path.join(BASE_DIR, 'templates')],
 )
 
 # SECURITY WARNING: keep the secret key used in production secret!

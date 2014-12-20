@@ -1,0 +1,21 @@
+<html>
+
+<body>
+
+<h1>Print this page</h1>
+
+{% if item.is_valuable %}
+<h1>Valuable Item</h1>
+{% endif %} 
+
+<h2>Found on: {{ item.last_status.timestamp }}</h2>
+
+<h3>Found in: {{ item.location.name }}</h3>
+<h3>Category: {{item.category.name }}</h3>
+<h3>Description: {{ item.description }}</h3>
+<h3>Possible owner's name: {{ item.possible_owner.first_name }} {{ item.possible_owner.last_name }}</h3>
+<h3>Found by: {{ item.found_by }}</h3>
+
+
+</body>
+<html>
