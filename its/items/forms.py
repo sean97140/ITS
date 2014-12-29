@@ -6,18 +6,13 @@ from its.items.models import Item, Location, Category, Status, Action
 
 class CheckInForm(ModelForm):
     
-    possible_owner = forms.ModelChoiceField(queryset=User.objects.all(), required=False)
-    username = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'NewUserClass'}))
-    first_name = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'NewUserClass'}))
-    last_name = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'NewUserClass'}))
-    email = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'NewUserClass'}))
+    #possible_owner = forms.ModelChoiceField(queryset=User.objects.all(), required=False)
+    possible_owner_found = forms.BooleanField(required=False)
+    username = forms.CharField(required=False)
+    first_name = forms.CharField(required=False)
+    last_name = forms.CharField(required=False)
+    email = forms.CharField(required=False)
 	
-    # Need to add the above fields into the html
-    
-    # Add additional fields for user creation.
-	# give these fields a css style
-	# ODIN username, First name, Last name, email, phone
-	# Add jquery to the html template to hide the css style for these fields.
 	# use LDAP to look up ODIN username
 	# If Possible owner is defined, then create a user.
 	# Override clean method to check if possible owner is used
@@ -26,14 +21,29 @@ class CheckInForm(ModelForm):
 	# Also use add error to throw a validation erro exception
 	
     def clean(self):
+        #import pdb; pdb.set_trace()
         cleaned_data = super(CheckInForm, self).clean()
         username = cleaned_data.get("username")
-        possible_owner_contacted = cleaned_data.get("possible_owner_contacted")
+        first_name = cleaned_data.get("first_name")
+        last_name = cleaned_data.get("last_name")
+        email = cleaned_data.get("email")
+        possible_owner_found = cleaned_data.get("possible_owner_found")
 		
-        if possible_owner_contacted and not username:
+        if possible_owner_found and not username:
             self.add_error("username", "username required")
             #raise forms.ValidationError("Username required")
+            
+        if possible_owner_found and not first_name:
+            self.add_error("first_name", "First name required")
+            
+        if possible_owner_found and not last_name:
+            self.add_error("last_name", "Last name required")
+            
+        if possible_owner_found and not email:
+            self.add_error("email", "Email required")
 
+        return cleaned_data
+        
     def save(self, *args, found_by, **kwargs):
     
         if(self.cleaned_data['username'] != ''):
@@ -47,6 +57,9 @@ class CheckInForm(ModelForm):
                             is_active=False, is_staff=False)
                             
             new_user.save()
+            
+        else:
+            new_user = None
                         
         self.instance.found_by = found_by
         self.instance.possible_owner = new_user
@@ -61,4 +74,4 @@ class CheckInForm(ModelForm):
     class Meta:
         model = Item
         fields = ['location', 'category', 'description', 'is_valuable', 
-        'possible_owner', 'possible_owner_contacted']
+        'possible_owner_contacted']

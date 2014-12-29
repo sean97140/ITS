@@ -1,3 +1,143 @@
 from django.test import TestCase
+from django.core.urlresolvers import reverse
+from its.users.models import User
+from its.items.models import Item, Location, Category, Action, Status
+from its.items.forms import CheckInForm
+from unittest.mock import patch
+
+
 
 # Create your tests here.
+class ItemsTest(TestCase):
+    
+    def setUp(self):
+        
+        fixtures = ['initial_data.json']
+        
+        super(ItemsTest, self).setUp()
+        
+        new_user = User(email="jdoe9@pdx.edu", first_name="Jon",
+        last_name="Doe8", username="jdoe9", password="test", is_active=True, is_staff=True)
+        
+        new_user.save()
+        
+        self.new_user = new_user
+        
+        new_location = Location(name="ML 115")
+        new_location.save()
+        
+        self.new_location = new_location
+        
+        new_category = Category(name="USB Storage Device")
+        new_category.save()
+        
+        self.new_category = new_category
+        
+        new_item = Item(location=new_location, category=new_category, 
+        description="usb device", is_valuable=False, possible_owner=None, 
+        possible_owner_contacted=False, returned_to=None, found_by=new_user)       
+        new_item.save()
+        
+        self.new_item = new_item
+        
+        new_action = Action(name="Checked in", machine_name="CHECKEDIN", weight=0)
+        new_action.save()
+        
+        self.new_action = new_action
+        
+        new_status = Status(item=new_item, action_taken=new_action, note="Initial check-in")
+        new_status.save()
+        self.new_status = new_status
+       
+        self.client.login(email=self.new_user.email, password=self.new_user.password)
+        
+        
+
+    def test_valid_printoff_view(self):
+        
+        response = self.client.get(reverse("printoff", args=[self.new_item.pk]))
+        self.assertEqual(response.status_code, 200)
+        
+    def test_invalid_printoff_view(self):
+    
+        bad_item = Item.objects.last().pk + 1
+        
+        response = self.client.get(reverse("printoff", args=[bad_item]))
+        self.assertEqual(response.status_code, 404)
+        
+    def test_valid_checkin_get_view(self):
+        
+        response = self.client.get(reverse('checkin'))
+        self.assertEqual(response.status_code, 200)
+    
+    def test_invalid_checkin_post_view(self):
+    
+        with patch('its.items.forms.CheckInForm.is_valid', return_value=False):
+            response = self.client.post(reverse('checkin'))
+        
+        self.assertEqual(response.status_code, 200)
+     
+    #def test_valid_checkin_post_view(self):
+    
+    #    form = {'location': self.new_location.pk, 'category': self.new_category.pk, 
+    #    'description': "usb device", 'is_valuable': False, 'possible_owner_contacted': False,
+    #    'possible_owner_found': False, 'username': "", 'first_name': "", 'last_name': "", 
+    #    'email': ""}
+        
+    #    response = self.client.post(reverse('checkin'), data=form)
+        
+    #    self.assertEqual(response.status_code, 302)
+    
+    def test_valid_CheckInForm_clean_form(self):
+        
+        form = CheckInForm(data={'location': self.new_location.pk, 'category': self.new_category.pk, 
+        'description': "usb device", 'is_valuable': False, 'possible_owner_contacted': False,
+        'possible_owner_found': False, 'username': "", 'first_name': "", 'last_name': "", 
+        'email': ""})
+        
+        self.assertEqual(form.is_valid(), True)
+        self.assertEqual(form.cleaned_data['username'], "")
+        self.assertEqual(form.cleaned_data['first_name'], "")
+        self.assertEqual(form.cleaned_data['last_name'], "")
+        self.assertEqual(form.cleaned_data['email'], "")
+        self.assertEqual(form.cleaned_data['possible_owner_found'], False)
+        
+    def test_invalid_CheckIn_clean_logic_form(self):
+    
+        form = CheckInForm(data={'location': self.new_location.pk, 'category': self.new_category.pk, 
+        'description': "usb device", 'is_valuable': False, 'possible_owner_contacted': False,
+        'possible_owner_found': True, 'username': "", 'first_name': "", 'last_name': "", 
+        'email': ""})
+        
+        self.assertEqual(form.is_valid(), False)
+        self.assertEqual(form.errors['username'], ["username required"])
+        self.assertEqual(form.errors['first_name'], ["First name required"])
+        self.assertEqual(form.errors['last_name'], ["Last name required"])
+        self.assertEqual(form.errors['email'], ["Email required"])
+       
+    def test_valid_CheckIn_save_logic_form(self):
+       
+        form = CheckInForm(data={'location': self.new_location.pk, 'category': self.new_category.pk, 
+        'description': "usb device", 'is_valuable': False, 'possible_owner_contacted': False,
+        'possible_owner_found': True, 'username': "jdoe10", 'first_name': "Jon", 'last_name': "Doe10", 
+        'email': "jdoe10@pdx.edu"})
+        
+        self.assertEqual(form.is_valid(), True)
+        
+        form.save(found_by=self.new_user)      
+        possible_owner = User.objects.get(username="jdoe10")
+        
+        self.assertEqual(possible_owner.first_name, "Jon")
+        self.assertEqual(possible_owner.last_name, "Doe10")
+        self.assertEqual(possible_owner.email, "jdoe10@pdx.edu")
+        
+    #def test_invalid_CheckIn_save_logic_form(self):
+    # Not sure how to write this
+
+    def test_valid_Item_last_status_model(self):
+    
+        self.assertEqual(self.new_item.last_status(), self.new_status)
+    
+    
+    
+    
