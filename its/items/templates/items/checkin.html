@@ -2,9 +2,19 @@
 {% extends "base.html" %}
 <head>
     {% block head %}
+    <script>
+    
+    function source(query, callback){
+        var url = "{% url 'users-autocomplete' %}";
+        $.getJSON(url, {query: query}, function (data) {
+            callback(data);
+        });
+    }
+    </script>
     <script src="{{ STATIC_URL }}js/checkin.js"></script>
     {% endblock %}
 </head> 
+
 
 <body>
 {% block body %}
@@ -28,6 +38,9 @@
     <th>{{ form.possible_owner_found.label_tag }}</th>
     <th>{{ form.possible_owner_found }}</th></tr>
     <table class="PossibleOwner">
+    <tr><th>{{ form.ldap_search.errors }}</th>
+    <th>{{ form.ldap_search.label_tag }}</th>
+    <th>{{ form.ldap_search }}</th></tr>
     <tr><th>{{ form.username.errors }}</th>
     <th>{{ form.username.label_tag }}</th>
     <th>{{ form.username }}</th></tr>

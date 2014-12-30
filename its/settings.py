@@ -1,3 +1,4 @@
+
 import os
 import sys
 from fnmatch import fnmatch
@@ -10,6 +11,8 @@ from varlet import variable
 PROJECT_DIR = lambda *path: os.path.normpath(os.path.join(os.path.dirname(__file__), *path))
 ROOT = lambda *path: PROJECT_DIR("../", *path)
 FIXTURE_DIRS = '/vagrant/its/its/its/fixtures'
+
+#MAKE_PATH = lambda *path: os.path.normpath(os.path.join(ROOT, *path))
 
 #FIXTURE_DIRS = lambda *path: os.path.join(PROJECT_DIR, 'fixtures'),
 
@@ -98,6 +101,17 @@ INSTALLED_APPS = (
     'its.users',
 	'its.items',
 )
+
+LDAP = {
+    'default': {
+                'host': variable("LDAP_HOST", default="ldap://ldap-bulk.oit.pdx.edu"),
+                'username': variable("LDAP_USERNAME", default='uid=rethinkwebsite,ou=service,dc=pdx,dc=edu'),
+                'password': variable("LDAP_PASSWORD", default=''),
+                'search_dn': variable("LDAP_SEARCH_DB", default='ou=people,dc=pdx,dc=edu'),
+                'tls': variable('LDAP_TLS', default=True),
+                'ca_file': PROJECT_DIR('ca.crt'),
+    }
+}
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

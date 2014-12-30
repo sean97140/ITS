@@ -12,6 +12,7 @@ class CheckInForm(ModelForm):
     first_name = forms.CharField(required=False)
     last_name = forms.CharField(required=False)
     email = forms.CharField(required=False)
+    ldap_search = forms.CharField(required=False)
 	
 	# use LDAP to look up ODIN username
 	# If Possible owner is defined, then create a user.
