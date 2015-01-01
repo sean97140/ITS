@@ -1,0 +1,26 @@
+<html>
+<body>
+    <h2>Items</h2>
+    
+    <table>
+        <tr><th>Location</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Valuable</th>
+            <th>Possible owner</th>
+            <th>Possible owner contacted</th>
+            <th>Returned to</th>
+            <th>Found by</th></tr>
+        {% for item in items %}
+            <tr><th>{{ item.location }}</th>
+            <th>{{ item.category }}</th>
+            <th>{{ item.description }}</th>
+            <th>{{ item.is_valuable }}</th>
+            <th>{{ item.possible_owner }}</th>
+            <th>{{ item.possible_owner_contacted }}</th>
+            <th>{{ item.returned_to }}</th>
+            <th>{{ item.found_by }}</th></tr>
+        {% endfor %}
+    </table>
+</body>
+<html>

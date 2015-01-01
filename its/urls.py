@@ -17,6 +17,7 @@ urlpatterns = patterns(
     url(r'^$', home, name='home'),
     url(r'^items/checkin$', items.checkin, name='checkin'),
 	url(r'^items/checkin$', items.checkin, name='index'),
+    url(r'^items/itemlist$', items.itemlist, name='itemlist'),
     url(r'^items/autocomplete/?$', items.autocomplete, name='users-autocomplete'),
     url(r'^items/(?P<item_id>\d+)/$', items.printoff, name='printoff'),
     #url(r'^items/(?P<pk>\d+)/$', items.printoff, name='printoff'),

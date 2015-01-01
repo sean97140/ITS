@@ -52,6 +52,8 @@ $(function(){
     
    // jQuery methods go here...
    // hides the element with id="username".
+   $('#id_possible_owner_found').attr('checked', false);
+   
    $(".PossibleOwner").toggle() 
    
    $('#id_possible_owner_found').click(function() {

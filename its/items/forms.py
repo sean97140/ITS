@@ -4,6 +4,7 @@ from django.forms import ModelForm
 from its.users.models import User
 from its.items.models import Item, Location, Category, Status, Action
 
+
 class CheckInForm(ModelForm):
     
     #possible_owner = forms.ModelChoiceField(queryset=User.objects.all(), required=False)

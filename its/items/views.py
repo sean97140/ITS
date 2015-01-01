@@ -7,6 +7,29 @@ from its.items.forms import CheckInForm
 from django.forms.models import model_to_dict
 from django.core.urlresolvers import reverse
 from arcutils.ldap import escape, ldapsearch, parse_profile
+from django.views.generic import ListView
+
+def itemlist(request):
+    item_list = Item.objects.order_by('-pk')
+    context = {'items': item_list}
+    return render(request, 'items/itemlist.html', context)
+
+
+"""
+def admin(request):
+
+    if request.method == 'POST':
+        form = AdminForm(request.POST)
+        
+        if form.is_valid():
+            print("nothing yet")
+            
+    else:
+        form = AdminForm()
+        
+    return render(request, 'items/admin.html', {'form': form})
+"""
+        
 
 def checkin(request):
     if request.method == 'POST':

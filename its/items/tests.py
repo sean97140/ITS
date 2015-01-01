@@ -137,7 +137,25 @@ class ItemsTest(TestCase):
     def test_valid_Item_last_status_model(self):
     
         self.assertEqual(self.new_item.last_status(), self.new_status)
+        
+    def test_valid_Item_str_model(self):
+        
+        self.assertEqual(self.new_item.__str__(), self.new_item.description)
+        
+    def test_valid_Category_str_model(self):
+        
+        self.assertEqual(self.new_category.__str__(), self.new_category.name)
+        
+    def test_valid_Location_str_model(self):
+        
+        self.assertEqual(self.new_location.__str__(), self.new_location.name)
+        
+    def test_valid_Status_str_model(self):
+        
+        self.assertEqual(self.new_status.__str__(), str(self.new_status.status_id))
     
-    
+    def test_valid_Action_str_model(self):
+        
+        self.assertEqual(self.new_action.__str__(), self.new_action.name)
     
     
