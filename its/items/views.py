@@ -3,32 +3,60 @@ from django.template import RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from its.items.models import Item, Location, Category, Status, Action
 from its.users.models import User
-from its.items.forms import CheckInForm
+from its.items.forms import CheckInForm, ItemFilterForm, ItemSelectForm, ItemReturnForm
 from django.forms.models import model_to_dict
 from django.core.urlresolvers import reverse
 from arcutils.ldap import escape, ldapsearch, parse_profile
 from django.views.generic import ListView
 
+def checkout(request, item_num):
+
+    chosen_item = get_object_or_404(Item, pk=item_num)
+    form = ItemReturnForm()
+    return render(request, 'items/checkout.html', {'form': form, 'item': chosen_item})
+
 def itemlist(request):
-    item_list = Item.objects.order_by('-pk')
-    context = {'items': item_list}
-    return render(request, 'items/itemlist.html', context)
 
-
-"""
-def admin(request):
-
+    #import pdb; pdb.set_trace()
+    
     if request.method == 'POST':
-        form = AdminForm(request.POST)
+        
+        form = ItemSelectForm(request.POST)
         
         if form.is_valid():
-            print("nothing yet")
+            return HttpResponseRedirect(reverse("checkout", args = [form.cleaned_data['item_num']]))
+         
+    if request.method == 'GET':
+        form = ItemFilterForm(request.GET)
+		
+        if form.is_valid() and (form.cleaned_data['select_location'] is not None or form.cleaned_data['select_category'] is not None or form.cleaned_data['display_is_valuable_only'] is not False or form.cleaned_data['search_keyword_or_name'] is not None):
             
-    else:
-        form = AdminForm()
+            kwargs = {}
+            
+            if form.cleaned_data['display_is_valuable_only'] is True:
+                kwargs['is_valuable'] = True
+
+            if form.cleaned_data['select_location'] is not None:
+                kwargs['location'] = Location.objects.get(name=form.cleaned_data['select_location']).pk
+                
+            if form.cleaned_data['select_category'] is not None:
+                kwargs['category'] = Category.objects.get(name=form.cleaned_data['select_category']).pk
+            
+            if form.cleaned_data['search_keyword_or_name'] is not '':
+                kwargs['description'] = form.cleaned_data['search_keyword_or_name']
+            
+            item_list = Item.objects.filter(**kwargs)
+            item_filter_form = ItemFilterForm()   
+            context = {'items': item_list, 'ItemFilter': ItemFilterForm(request.GET)}
         
-    return render(request, 'items/admin.html', {'form': form})
-"""
+        else:
+        
+            item_filter_form = ItemFilterForm()   
+            item_list = Item.objects.order_by('-pk')
+            context = {'items': item_list, 'ItemFilter': item_filter_form}
+    
+        return render(request, 'items/itemlist.html', context)
+
         
 
 def checkin(request):

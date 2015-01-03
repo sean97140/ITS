@@ -4,6 +4,23 @@ from django.forms import ModelForm
 from its.users.models import User
 from its.items.models import Item, Location, Category, Status, Action
 
+class ItemReturnForm(ModelForm):
+    
+    class Meta:
+        model = Item
+        fields = ['returned_to']
+
+class ItemSelectForm(forms.Form):
+    item_num = forms.IntegerField(required=True)
+    action = forms.CharField(max_length=50, required=True)
+
+class ItemFilterForm(forms.Form):
+
+    select_location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
+    select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
+    display_is_valuable_only = forms.BooleanField(required=False)
+    search_keyword_or_name = forms.CharField(max_length=50, required=False)
+    
 
 class CheckInForm(ModelForm):
     

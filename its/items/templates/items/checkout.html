@@ -1,0 +1,15 @@
+<h2>You are returning the following item:</h2>
+
+<h3>Location: {{ item.location }}</h3>
+<h3>Category: {{ item.category }}</h3>
+<h3>Description: {{ item.description }}</h3>
+<h3>Valuable: {{ item.is_valuable }}</h3>
+<h3>Possible Owner: {{ item.possible_owner }}</h3>
+
+<h3>Enter the owner's name as it appears on their photo ID (Required)</h3>
+<form action="" method="post">
+{% csrf_token %}
+{{ form }} 
+<br><br><input type="submit" name="action" value="Return Item">
+<input type="submit" name="action" value="Cancel">
+</form>

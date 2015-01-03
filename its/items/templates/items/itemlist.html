@@ -1,9 +1,14 @@
 <html>
 <body>
     <h2>Items</h2>
-    
+    <form action="" method="get">
+    {% csrf_token %}
+    {{ ItemFilter }}
+    <input type="submit" value="Filter" />
+    </form>
     <table>
-        <tr><th>Location</th>
+        <tr><th>Select</th>
+            <th>Location</th>
             <th>Category</th>
             <th>Description</th>
             <th>Valuable</th>
@@ -11,8 +16,11 @@
             <th>Possible owner contacted</th>
             <th>Returned to</th>
             <th>Found by</th></tr>
+        <form action="" method="post">
+        {% csrf_token %}
         {% for item in items %}
-            <tr><th>{{ item.location }}</th>
+            <tr><th><input type="radio" name="item_num" value={{ item.pk }}></th>
+            <th>{{ item.location }}</th>
             <th>{{ item.category }}</th>
             <th>{{ item.description }}</th>
             <th>{{ item.is_valuable }}</th>
@@ -21,6 +29,9 @@
             <th>{{ item.returned_to }}</th>
             <th>{{ item.found_by }}</th></tr>
         {% endfor %}
-    </table>
+     </table>
+        <br><input type="submit" name="action" value="Attendant Return"><br><br>
+        <input type="submit" name="action" value="Management Action">
+        </form>
 </body>
 <html>
