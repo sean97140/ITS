@@ -10,7 +10,7 @@ from varlet import variable
 
 PROJECT_DIR = lambda *path: os.path.normpath(os.path.join(os.path.dirname(__file__), *path))
 ROOT = lambda *path: PROJECT_DIR("../", *path)
-FIXTURE_DIRS = '/vagrant/its/its/its/fixtures'
+FIXTURE_DIRS = ['/vagrant/its/its/its/fixtures',]
 
 #MAKE_PATH = lambda *path: os.path.normpath(os.path.join(ROOT, *path))
 

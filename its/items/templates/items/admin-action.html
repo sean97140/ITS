@@ -1,0 +1,28 @@
+<html>
+<body>
+
+<h2>You are performing a management action on the following item:</h2>
+
+<h3>Location: {{ item.location }}</h3>
+<h3>Category: {{ item.category }}</h3>
+<h3>Found: {{ item.found_on }}</h3>
+<h3>Description: {{ item.description }}</h3>
+<h3>Valuable: {{ item.is_valuable }}</h3>
+<h3>Possible Owner: {{ item.possible_owner }}</h3>
+
+<form action="" method="post">
+{% csrf_token %}
+<table>
+<tr><th>{{ form.action.label_tag }} </th>
+<th>{{ form.action }}</th>
+<th>{{ form.action.errors }} </th></tr>
+<tr><th>{{ form.note.label_tag }} </th>
+<th>{{ form.note }}</th>
+<th>{{ form.note.errors }} </th></tr>
+</table> 
+<br><br><input type="submit" name="action" value="Perform action">
+<input type="submit" name="action" value="Cancel">
+</form>
+
+</body>
+</html>

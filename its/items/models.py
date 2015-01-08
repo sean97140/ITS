@@ -77,7 +77,10 @@ class Item(models.Model):
         return self.description
 		
     def last_status(self):
-        return Status.objects.filter(item=self).last()
+        return Status.objects.filter(item=self).first().action_taken
+        
+    def found_on(self):
+        return Status.objects.filter(item=self).last().timestamp
 	
 
 

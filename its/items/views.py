@@ -3,28 +3,65 @@ from django.template import RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from its.items.models import Item, Location, Category, Status, Action
 from its.users.models import User
-from its.items.forms import CheckInForm, ItemFilterForm, ItemSelectForm, ItemReturnForm
+from its.items.forms import CheckInForm, ItemFilterForm, ItemSelectForm, ItemReturnForm, AdminActionForm
 from django.forms.models import model_to_dict
 from django.core.urlresolvers import reverse
 from arcutils.ldap import escape, ldapsearch, parse_profile
 from django.views.generic import ListView
 
-def checkout(request, item_num):
-
+def adminaction(request, item_num):
+    
     chosen_item = get_object_or_404(Item, pk=item_num)
-    form = ItemReturnForm()
+
+    if request.method == 'POST':
+    
+        form = AdminActionForm(request.POST)
+        
+        if form.is_valid():
+
+            #form.save(item_pk=item_num)	
+            return HttpResponseRedirect(reverse("itemlist"))
+    
+    else:
+        form = AdminActionForm()
+        
+    return render(request, 'items/admin-action.html', {'form': form, 'item': chosen_item})
+
+
+def checkout(request, item_num):
+    
+    chosen_item = get_object_or_404(Item, pk=item_num)
+
+    if request.method == 'POST':
+    
+        form = ItemReturnForm(request.POST)
+        
+        if form.is_valid():
+
+            form.save(item_pk=item_num)	
+            return HttpResponseRedirect(reverse("itemlist"))
+    
+    else:
+        form = ItemReturnForm()
+        
     return render(request, 'items/checkout.html', {'form': form, 'item': chosen_item})
 
 def itemlist(request):
 
-    #import pdb; pdb.set_trace()
     
     if request.method == 'POST':
+    
+        #import pdb; pdb.set_trace()
         
         form = ItemSelectForm(request.POST)
         
         if form.is_valid():
-            return HttpResponseRedirect(reverse("checkout", args = [form.cleaned_data['item_num']]))
+        
+            if form.cleaned_data['action'] == 'Attendant Return':
+                return HttpResponseRedirect(reverse("checkout", args = [form.cleaned_data['item_num']]))
+                
+            elif request.POST['action'] == 'Management Action':
+                return HttpResponseRedirect(reverse("admin-action", args = [form.cleaned_data['item_num']]))
          
     if request.method == 'GET':
         form = ItemFilterForm(request.GET)

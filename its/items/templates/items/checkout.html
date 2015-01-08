@@ -2,14 +2,28 @@
 
 <h3>Location: {{ item.location }}</h3>
 <h3>Category: {{ item.category }}</h3>
+<h3>Found: {{ item.found_on }}</h3>
 <h3>Description: {{ item.description }}</h3>
 <h3>Valuable: {{ item.is_valuable }}</h3>
 <h3>Possible Owner: {{ item.possible_owner }}</h3>
 
-<h3>Enter the owner's name as it appears on their photo ID (Required)</h3>
+<h3>Enter the owner's name as it appears on their photo ID, as well as their email address.</h3>
 <form action="" method="post">
 {% csrf_token %}
-{{ form }} 
+<table>
+<tr><th>{{ form.username.label_tag }}</th>
+<th>{{ form.username }}</th>
+<th>{{ form.username.errors }}</th></tr>
+<tr><th>{{ form.first_name.label_tag }}</th>
+<th>{{ form.first_name }}</th>
+<th>{{ form.first_name.errors }}</th></tr>
+<tr><th>{{ form.last_name.label_tag }}</th>
+<th>{{ form.last_name }}</th>
+<th>{{ form.last_name.errors }}</th></tr>
+<tr><th>{{ form.email.label_tag }}</th>   
+<th>{{ form.email }}</th>
+<th>{{ form.email.errors }}</th></tr>
+</table>
 <br><br><input type="submit" name="action" value="Return Item">
 <input type="submit" name="action" value="Cancel">
 </form>

@@ -4,11 +4,95 @@ from django.forms import ModelForm
 from its.users.models import User
 from its.items.models import Item, Location, Category, Status, Action
 
-class ItemReturnForm(ModelForm):
+class AdminActionForm(forms.Form):
     
-    class Meta:
-        model = Item
-        fields = ['returned_to']
+    action = forms.ModelChoiceField(queryset=Action.objects.all(), required=True)
+    note = forms.CharField(widget=forms.Textarea, required=False)
+
+    def clean(self):
+        # require note field on action of OTHER
+        cleaned_data = super(AdminActionForm, self).clean()
+        action = cleaned_data.get("action")
+        note = cleaned_data.get("note")
+    
+        if action == 'Other':
+            self.add_error("note", "Note required when choosing action of type Other.")
+        
+        return cleaned_data
+    
+    
+    
+    #def save(self, *args, item_pk, **kwargs):
+
+    # save status
+    
+class ItemReturnForm(forms.Form):
+    
+    username = forms.CharField(required=False, min_length=2)
+    first_name = forms.CharField(required=True)
+    last_name = forms.CharField(required=True)
+    email = forms.CharField(required=True)
+    
+    
+    # Change to not use username
+    # Just search on email
+    def save(self, *args, item_pk, **kwargs):
+    
+        try:
+            returned_user = User.objects.get(first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'], email=self.cleaned_data['email'])
+        except User.DoesNotExist:
+            returned_user = None
+
+        
+        if returned_user is None and self.cleaned_data['username'] is not '':
+            
+            try:
+                check_for_user = User.objects.get(username=self.cleaned_data['username'])
+            except User.DoesNotExist:
+                check_for_user = None
+            
+            if check_for_user is None:
+                returned_user = User(first_name = self.cleaned_data['first_name'], last_name = self.cleaned_data['last_name'], email = self.cleaned_data['email'], username = self.cleaned_data['username'], is_active=False, is_staff=False)
+                
+                returned_user.save()
+            
+            else:
+                returned_user = check_for_user
+            
+            
+        elif returned_user is None and self.cleaned_data['username'] is '':
+            
+            new_username = '_' + self.cleaned_data['first_name'] + self.cleaned_data['last_name']
+            
+            try:
+                check_for_user = User.objects.get(username=new_username)
+            except User.DoesNotExist:
+                check_for_user = None
+            
+            i = 0
+                
+            while check_for_user is not None:
+                new_username = new_username + i
+                
+                try:
+                    check_for_user = User.objects.get(username=new_username)
+                except User.DoesNotExist:
+                    check_for_user = None
+                ++i
+                    
+            returned_user = User(first_name = self.cleaned_data['first_name'], last_name = self.cleaned_data['last_name'], 
+            email = self.cleaned_data['email'], username = new_username, is_active=False, is_staff=False)
+                
+            returned_user.save()
+
+        returned_item = Item.objects.get(pk=item_pk)
+        returned_item.returned_to = returned_user
+        returned_item.save()
+        
+        new_action = Action.objects.get(name="Returned")
+        new_status = Status(item=returned_item, action_taken=new_action, note="Returned to owner").save()
+
+        return returned_item    
 
 class ItemSelectForm(forms.Form):
     item_num = forms.IntegerField(required=True)
@@ -50,7 +134,6 @@ class CheckInForm(ModelForm):
 		
         if possible_owner_found and not username:
             self.add_error("username", "username required")
-            #raise forms.ValidationError("Username required")
             
         if possible_owner_found and not first_name:
             self.add_error("first_name", "First name required")
