@@ -1,0 +1,65 @@
+[
+{
+    "model": "items.action",
+    "fields": {
+        "machine_name": "CHECKED_IN",
+        "weight": 0,
+        "name": "Checked in"
+    },
+    "pk": 1
+},
+{
+    "model": "items.action",
+    "fields": {
+        "machine_name": "RETURNED",
+        "weight": 0,
+        "name": "Returned"
+    },
+    "pk": 3
+},
+{
+    "model": "items.action",
+    "fields": {
+        "machine_name": "CPSO",
+        "weight": 0,
+        "name": "Taken to CPSO"
+    },
+    "pk": 4
+},
+{
+    "model": "items.action",
+    "fields": {
+        "machine_name": "ID_SERVICES",
+        "weight": 0,
+        "name": "Taken to ID services"
+    },
+    "pk": 5
+},
+{
+    "model": "items.action",
+    "fields": {
+        "machine_name": "DISPOSED",
+        "weight": 0,
+        "name": "Disposed or erased"
+    },
+    "pk": 6
+},
+{
+    "model": "items.action",
+    "fields": {
+        "machine_name": "MISSING",
+        "weight": 0,
+        "name": "Missing item"
+    },
+    "pk": 7
+},
+{
+    "model": "items.action",
+    "fields": {
+        "machine_name": "OTHER",
+        "weight": 0,
+        "name": "Other"
+    },
+    "pk": 8
+}
+]
