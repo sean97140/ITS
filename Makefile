@@ -16,7 +16,8 @@ export PATH:=$(VENV_DIR)/bin:$(PATH):$(PG_DIRS)
 run:
 	$(MANAGE) runserver $(HOST):$(PORT)
 
-install: $(VENV_DIR)
+init: $(VENV_DIR)
+	psql -c 'drop database if exists $(PROJECT_NAME);' postgres
 	psql -c 'create database $(PROJECT_NAME);' postgres
 	$(MANAGE) migrate
 	$(MANAGE) check
