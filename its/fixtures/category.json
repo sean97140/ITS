@@ -1,0 +1,65 @@
+[
+{
+    "fields": {
+        "name": "USB Storage Device"
+    },
+    "model": "items.category",
+    "pk": 8
+},
+{
+    "fields": {
+        "name": "Music Device"
+    },
+    "model": "items.category",
+    "pk": 9
+},
+{
+    "fields": {
+        "name": "Phone"
+    },
+    "model": "items.category",
+    "pk": 10
+},
+{
+    "fields": {
+        "name": "ID"
+    },
+    "model": "items.category",
+    "pk": 11
+},
+{
+    "fields": {
+        "name": "Keys"
+    },
+    "model": "items.category",
+    "pk": 12
+},
+{
+    "fields": {
+        "name": "Headphones"
+    },
+    "model": "items.category",
+    "pk": 13
+},
+{
+    "fields": {
+        "name": "Clothing"
+    },
+    "model": "items.category",
+    "pk": 14
+},
+{
+    "fields": {
+        "name": "Glasses/Sunglasses"
+    },
+    "model": "items.category",
+    "pk": 15
+},
+{
+    "fields": {
+        "name": "Book"
+    },
+    "model": "items.category",
+    "pk": 16
+}
+]
