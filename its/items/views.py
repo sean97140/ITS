@@ -40,7 +40,7 @@ def checkout(request, item_num):
         
         if form.is_valid():
 
-            form.save(item_pk=item_num)	
+            form.save(item_pk=item_num, performed_by=request.user)	
             return HttpResponseRedirect(reverse("itemlist"))
     
     else:

@@ -31,8 +31,6 @@ class AdminActionForm(forms.Form):
         new_action = Action.objects.get(name=self.cleaned_data['action_choice'])
         new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note']).save()
         
-        
-        #import pdb; pdb.set_trace()
     
     
 class ItemReturnForm(forms.Form):
@@ -45,7 +43,7 @@ class ItemReturnForm(forms.Form):
     
     # Change to not use username
     # Just search on email
-    def save(self, *args, item_pk, **kwargs):
+    def save(self, *args, item_pk, performed_by, **kwargs):
     
         try:
             returned_user = User.objects.get(first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'], email=self.cleaned_data['email'])
@@ -56,7 +54,7 @@ class ItemReturnForm(forms.Form):
         if returned_user is None and self.cleaned_data['username'] is not '':
             
             try:
-                check_for_user = User.objects.get(username=self.cleaned_data['username'])
+                check_for_user = User.objects.get(email=self.cleaned_data['email'])
             except User.DoesNotExist:
                 check_for_user = None
             
@@ -99,7 +97,7 @@ class ItemReturnForm(forms.Form):
         returned_item.save()
         
         new_action = Action.objects.get(name="Returned")
-        new_status = Status(item=returned_item, action_taken=new_action, note="Returned to owner").save()
+        new_status = Status(item=returned_item, action_taken=new_action, performed_by=performed_by, note="Returned to owner").save()
 
         return returned_item    
 
@@ -164,13 +162,15 @@ class CheckInForm(ModelForm):
             
         else:
             new_user = None
-                        
+        
+        # Once item model is changed this can be removed, since status performed by will
+        # keep track.
         self.instance.found_by = found_by
         self.instance.possible_owner = new_user
         item = super(CheckInForm, self).save(*args, **kwargs)
         
         new_action = Action.objects.get(name="Checked in")
-        new_status = Status(item=item, action_taken=new_action, note="Initial check-in").save()
+        new_status = Status(item=item, action_taken=new_action, note="Initial check-in", performed_by=found_by).save()
 
         return item
 
