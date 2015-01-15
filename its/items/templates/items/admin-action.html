@@ -13,9 +13,9 @@
 <form action="" method="post">
 {% csrf_token %}
 <table>
-<tr><th>{{ form.action.label_tag }} </th>
-<th>{{ form.action }}</th>
-<th>{{ form.action.errors }} </th></tr>
+<tr><th>{{ form.action_choice.label_tag }} </th>
+<th>{{ form.action_choice }}</th>
+<th>{{ form.action_choice.errors }} </th></tr>
 <tr><th>{{ form.note.label_tag }} </th>
 <th>{{ form.note }}</th>
 <th>{{ form.note.errors }} </th></tr>

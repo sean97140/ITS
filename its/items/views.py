@@ -15,11 +15,13 @@ def adminaction(request, item_num):
 
     if request.method == 'POST':
     
+        #import pdb; pdb.set_trace()
+    
         form = AdminActionForm(request.POST)
         
         if form.is_valid():
 
-            #form.save(item_pk=item_num)	
+            form.save(item_pk=item_num)	
             return HttpResponseRedirect(reverse("itemlist"))
     
     else:

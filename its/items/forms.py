@@ -6,25 +6,34 @@ from its.items.models import Item, Location, Category, Status, Action
 
 class AdminActionForm(forms.Form):
     
-    action = forms.ModelChoiceField(queryset=Action.objects.all(), required=True)
+    action_choice = forms.ModelChoiceField(queryset=Action.objects.all(), required=True)
     note = forms.CharField(widget=forms.Textarea, required=False)
+            
 
     def clean(self):
         # require note field on action of OTHER
-        cleaned_data = super(AdminActionForm, self).clean()
-        action = cleaned_data.get("action")
+        cleaned_data = self.cleaned_data
+        action_choice = cleaned_data.get("action_choice")
         note = cleaned_data.get("note")
-    
-        if action == 'Other':
+        
+        #import pdb; pdb.set_trace()
+        
+        if str(action_choice) == 'Other' and note == '':
             self.add_error("note", "Note required when choosing action of type Other.")
         
         return cleaned_data
-    
-    
-    
-    #def save(self, *args, item_pk, **kwargs):
+  
+   
+    def save(self, *args, item_pk, **kwargs):
 
-    # save status
+        # save status
+        item = Item.objects.get(pk=item_pk)
+        new_action = Action.objects.get(name=self.cleaned_data['action_choice'])
+        new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note']).save()
+        
+        
+        #import pdb; pdb.set_trace()
+    
     
 class ItemReturnForm(forms.Form):
     
@@ -108,7 +117,6 @@ class ItemFilterForm(forms.Form):
 
 class CheckInForm(ModelForm):
     
-    #possible_owner = forms.ModelChoiceField(queryset=User.objects.all(), required=False)
     possible_owner_found = forms.BooleanField(required=False)
     username = forms.CharField(required=False)
     first_name = forms.CharField(required=False)
@@ -116,12 +124,6 @@ class CheckInForm(ModelForm):
     email = forms.CharField(required=False)
     ldap_search = forms.CharField(required=False)
 	
-	# use LDAP to look up ODIN username
-	# If Possible owner is defined, then create a user.
-	# Override clean method to check if possible owner is used
-	# to make sure the optional form is set to required. 
-	# need to import superclass
-	# Also use add error to throw a validation erro exception
 	
     def clean(self):
         #import pdb; pdb.set_trace()

@@ -18,12 +18,14 @@ class Action(models.Model):
 		
     def __str__(self):
         return self.name
-	
-	
+
+        
+# should add a performed by field
 class Status(models.Model):
     status_id = models.AutoField(primary_key=True)
     item = models.ForeignKey('Item')
     action_taken = models.ForeignKey(Action)
+    performed_by = models.ForeignKey(User, null=True, default=None)
     timestamp = models.DateTimeField(auto_now_add=True)
     note = models.TextField()
 	
