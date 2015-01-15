@@ -35,6 +35,7 @@ reload:
 		touch $(PROJECT_NAME)/wsgi.py
 
 $(VENV_DIR): requirements.txt
-	$(PYTHON) -m venv .env
+	rm -rf $(VENV_DIR)
+	$(PYTHON) -m venv $(VENV_DIR)
 	curl https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py | python
 	pip install -r requirements.txt
