@@ -14,7 +14,7 @@ ADMINS = []
 
 DB_NAME = 'its'
 
-DB_USER = 'root'
+DB_USER = 'postgres'
 
 DB_PASSWORD = ''
 
