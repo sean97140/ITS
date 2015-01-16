@@ -1,0 +1,14 @@
+language: python
+python:
+  - "3.3"
+  - "3.4"
+sudo: false
+# command to install dependencies
+install:
+  - cp variables.travis.py variables.py
+  - make init
+# command to run tests
+script: make test
+# Spam the IRC channel yay!
+notifications:
+  irc: "irc.cat.pdx.edu#arc"
