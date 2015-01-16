@@ -31,9 +31,6 @@ DEFAULT_FROM_EMAIL = SERVER_EMAIL = 'no-reply@pdx.edu'
 # List of two-tuples containing your name, and an email [("Joe", "joe@example.com")]
 ADMINS = variable("ADMINS", [])
 
-# the hostname of the site, which will be used to construct absolute URLs
-HOSTNAME = variable("HOSTNAME", default="10.0.0.10:8000")
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
