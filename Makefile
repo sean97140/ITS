@@ -27,6 +27,9 @@ clean:
 	find . -iname "*.pyo" -delete
 	find . -iname "__pycache__" -delete
 
+test: $(VENV_DIR)
+	$(MANAGE) test
+
 coverage:
 	coverage run $(MANAGE) test && coverage html
 
