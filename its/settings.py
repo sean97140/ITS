@@ -48,6 +48,8 @@ DATABASES = {
     },
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 LOGGING_CONFIG = 'arcutils.logging.basic'
 
 LOGIN_URL = reverse_lazy("home")
