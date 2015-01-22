@@ -1,0 +1,8 @@
+The following item was found: 
+
+Found on: {{ found_on }}
+Found in: {{ found_in }} 
+Found by: {{ found_by }} 
+Category: {{ category }}
+Description: {{ description }}
+Possible owner: {{ possible_owner_name }}
