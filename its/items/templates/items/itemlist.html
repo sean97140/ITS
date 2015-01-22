@@ -16,8 +16,7 @@
             <th>Possible owner contacted</th>
             <th>Returned to</th>
             <th>Found by</th>
-            <th>Status</th>
-            <th>Returned to</th></tr>
+            <th>Status</th></tr>
         <form action="" method="post">
         {% csrf_token %}
         {% for item in items %}
@@ -29,9 +28,8 @@
             <th>{{ item.possible_owner }}</th>
             <th>{{ item.possible_owner_contacted }}</th>
             <th>{{ item.returned_to }}</th>
-            <th>{{ item.found_by }}</th>
-            <th>{{ item.last_status }}</th>
-            <th>{{ item.returned_to }}</th></tr>
+            <th>{{ item.last_status.performed_by }}</th>
+            <th>{{ item.last_status.action_taken }}</th></tr>
         {% endfor %}
      </table>
         <br><input type="submit" name="action" value="Attendant Return"><br><br>

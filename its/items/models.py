@@ -68,7 +68,6 @@ class Item(models.Model):
     possible_owner = models.ForeignKey(User, related_name='item_possible_owner', null=True)
     possible_owner_contacted = models.BooleanField(default=False)
     returned_to = models.ForeignKey(User, related_name='item_returned_to', null=True)
-    found_by = models.ForeignKey(User, related_name='item_found_by')
     
     
     class Meta:
@@ -78,11 +77,17 @@ class Item(models.Model):
         #import pdb; pdb.set_trace()
         return self.description
 		
+    # This returns the last updated status, which is the first status
+    # it is currently first in the db.
     def last_status(self):
-        return Status.objects.filter(item=self).first().action_taken
-        
+        return Status.objects.filter(item=self).first()
+    
     def found_on(self):
         return Status.objects.filter(item=self).last().timestamp
+        
+    def found_by(self):
+        return Status.objects.filter(item=self).last().performed_by
+        
 	
 
 

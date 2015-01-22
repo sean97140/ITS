@@ -1,0 +1,9 @@
+The following item was returned:
+
+Found on: {{ found_on }}
+Found in: {{ found_in }} 
+Returned by: {{ returned_by }} 
+Category: {{ category }}
+Description: {{ description }}
+Possible owner: {{ possible_owner_name }}
+Returned to: {{ returned_to }}
