@@ -1,5 +1,6 @@
 from django.db import models
 from django import forms
+from django.conf import settings
 from django.forms import ModelForm
 from its.users.models import User
 from its.items.models import Item, Location, Category, Status, Action
@@ -44,7 +45,26 @@ class ItemReturnForm(forms.Form):
     last_name = forms.CharField(required=True)
     email = forms.CharField(required=True)
     
+    def checkout_email(self, item):
     
+        subject = 'Valuable item checked out'
+        to = settings.CHECKOUT_EMAIL_TO
+        from_email = settings.CHECKOUT_EMAIL_FROM
+
+        ctx = {
+            'found_on': str(item.found_on()),
+            'possible_owner_name': str(item.possible_owner),
+            'returned_by': str(item.last_status().performed_by),
+            'returned_to': str(item.returned_to),
+            'found_in': item.location.name,
+            'category': item.category.name,
+            'description': item.description           
+        }
+        
+        message = render_to_string('items/checkout_email.txt', ctx)
+
+        EmailMessage(subject, message, to=to, from_email=from_email).send()
+	
     # Change to not use username
     # Just search on email
     def save(self, *args, item_pk, performed_by, **kwargs):
@@ -103,6 +123,10 @@ class ItemReturnForm(forms.Form):
         new_action = Action.objects.get(name="Returned")
         new_status = Status(item=returned_item, action_taken=new_action, performed_by=performed_by, note="Returned to owner").save()
 
+        
+        if(returned_item.is_valuable == True):
+            self.checkout_email(returned_item)
+        
         return returned_item    
 
 class ItemSelectForm(forms.Form):
@@ -129,8 +153,8 @@ class CheckInForm(ModelForm):
     def checkin_email(self, item):
     
         subject = 'Valuable item checked in'
-        to = ['Lab_supplies@lists.pdx.edu']
-        from_email = 'lost_found_admin@pdx.edu'
+        to = settings.CHECKIN_EMAIL_TO
+        from_email = settings.CHECKIN_EMAIL_FROM
 
         ctx = {
             'found_on': str(item.found_on()),
@@ -169,7 +193,7 @@ class CheckInForm(ModelForm):
 
         return cleaned_data
         
-    def save(self, *args, performed_by, **kwargs):
+    def save(self, *args, current_user, **kwargs):
         
         #import pdb; pdb.set_trace()
         
@@ -192,7 +216,7 @@ class CheckInForm(ModelForm):
         item = super(CheckInForm, self).save(*args, **kwargs)
         
         new_action = Action.objects.get(name="Checked in")
-        new_status = Status(item=item, action_taken=new_action, note="Initial check-in", performed_by=performed_by).save()
+        new_status = Status(item=item, action_taken=new_action, note="Initial check-in", performed_by=current_user).save()
 
         if(self.cleaned_data['is_valuable'] == True):
             self.checkin_email(item)
