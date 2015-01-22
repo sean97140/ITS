@@ -34,6 +34,12 @@ ADMINS = variable("ADMINS", [])
 # the hostname of the site, which will be used to construct absolute URLs
 HOSTNAME = variable("HOSTNAME", default="10.0.0.10:8000")
 
+CHECKIN_EMAIL_TO = ['Lab_supplies@lists.pdx.edu']
+CHECKIN_EMAIL_FROM = 'lost_found_admin@pdx.edu'
+CHECKOUT_EMAIL_TO = ['Lab_supplies@lists.pdx.edu']
+CHECKOUT_EMAIL_FROM = 'lost_found_admin@pdx.edu'
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -47,8 +53,6 @@ DATABASES = {
         'PORT': '',
     },
 }
-
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 LOGGING_CONFIG = 'arcutils.logging.basic'
 
