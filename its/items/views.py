@@ -103,7 +103,7 @@ def checkin(request):
         form = CheckInForm(request.POST)
 		
         if form.is_valid():            
-            new_item = form.save(performed_by=request.user)	
+            new_item = form.save(current_user=request.user)	
             return HttpResponseRedirect(reverse("printoff", args = [new_item.pk]))
 			
     else:
