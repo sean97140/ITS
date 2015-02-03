@@ -1,0 +1,39 @@
+<html>
+<body>
+    <h2>Items</h2>
+    <form action="" method="get">
+    {% csrf_token %}
+    {{ ItemFilter }}
+    <input type="submit" value="Filter" />
+    </form>
+    <table>
+        <tr><th>Select</th>
+            <th>Location</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Valuable</th>
+            <th>Possible owner</th>
+            <th>Possible owner contacted</th>
+            <th>Returned to</th>
+            <th>Found by</th>
+            <th>Status</th></tr>
+        <form action="" method="post">
+        {% csrf_token %}
+        {% for item in items %}
+            <tr><th><input type="radio" name="item_num" value={{ item.pk }}></th>
+            <th>{{ item.location }}</th>
+            <th>{{ item.category }}</th>
+            <th>{{ item.description }}</th>
+            <th>{{ item.is_valuable }}</th>
+            <th>{{ item.possible_owner }}</th>
+            <th>{{ item.possible_owner_contacted }}</th>
+            <th>{{ item.returned_to }}</th>
+            <th>{{ item.last_status.performed_by }}</th>
+            <th>{{ item.last_status.action_taken }}</th></tr>
+        {% endfor %}
+     </table>
+        <br><input type="submit" name="action" value="Attendant Return"><br><br>
+        <input type="submit" name="action" value="Management Action">
+        </form>
+</body>
+<html>
