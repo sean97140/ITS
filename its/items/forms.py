@@ -40,7 +40,6 @@ class AdminActionForm(forms.Form):
     
 class ItemReturnForm(forms.Form):
     
-    username = forms.CharField(required=False, min_length=2)
     first_name = forms.CharField(required=True)
     last_name = forms.CharField(required=True)
     email = forms.CharField(required=True)
@@ -65,8 +64,7 @@ class ItemReturnForm(forms.Form):
 
         EmailMessage(subject, message, to=to, from_email=from_email).send()
 	
-    # Change to not use username
-    # Just search on email
+
     def save(self, *args, item_pk, performed_by, **kwargs):
     
         try:
@@ -74,45 +72,24 @@ class ItemReturnForm(forms.Form):
         except User.DoesNotExist:
             returned_user = None
 
-        
-        if returned_user is None and self.cleaned_data['username'] is not '':
-            
-            try:
-                check_for_user = User.objects.get(email=self.cleaned_data['email'])
-            except User.DoesNotExist:
-                check_for_user = None
-            
-            if check_for_user is None:
-                returned_user = User(first_name = self.cleaned_data['first_name'], last_name = self.cleaned_data['last_name'], email = self.cleaned_data['email'], username = self.cleaned_data['username'], is_active=False, is_staff=False)
-                
-                returned_user.save()
-            
-            else:
-                returned_user = check_for_user
-            
-            
-        elif returned_user is None and self.cleaned_data['username'] is '':
-            
+          
+        if returned_user is None:
+           
             new_username = '_' + self.cleaned_data['first_name'] + self.cleaned_data['last_name']
-            
-            try:
-                check_for_user = User.objects.get(username=new_username)
-            except User.DoesNotExist:
-                check_for_user = None
-            
+            check_for_user = None
             i = 0
-                
-            while check_for_user is not None:
-                new_username = new_username + i
+            
+            while check_for_user is None:
                 
                 try:
-                    check_for_user = User.objects.get(username=new_username)
+                    check_for_user = User.objects.get(username=new_username + str(i))
                 except User.DoesNotExist:
-                    check_for_user = None
+                    check_for_user = new_username + str(i)
+                
                 ++i
                     
             returned_user = User(first_name = self.cleaned_data['first_name'], last_name = self.cleaned_data['last_name'], 
-            email = self.cleaned_data['email'], username = new_username, is_active=False, is_staff=False)
+            email = self.cleaned_data['email'], username = check_for_user, is_active=False, is_staff=False)
                 
             returned_user.save()
 
@@ -122,7 +99,6 @@ class ItemReturnForm(forms.Form):
         
         new_action = Action.objects.get(name="Returned")
         new_status = Status(item=returned_item, action_taken=new_action, performed_by=performed_by, note="Returned to owner").save()
-
         
         if(returned_item.is_valuable == True):
             self.checkout_email(returned_item)
@@ -135,8 +111,18 @@ class ItemSelectForm(forms.Form):
 
 class ItemFilterForm(forms.Form):
 
+    sort_choices= (
+        ('', '--------'),
+        ('location', 'Location'),
+        ('category', 'Category'),
+        ('description', 'Description'),
+        ('possible_owner', 'Possible owner'),
+        ('found_on' , 'Date found'),
+    )
+
     select_location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
     select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
+    sort_by = forms.ChoiceField(choices=sort_choices, required=False)
     display_is_valuable_only = forms.BooleanField(required=False)
     search_keyword_or_name = forms.CharField(max_length=50, required=False)
     
@@ -217,7 +203,7 @@ class CheckInForm(ModelForm):
         
         new_action = Action.objects.get(name="Checked in")
         new_status = Status(item=item, action_taken=new_action, note="Initial check-in", performed_by=current_user).save()
-
+        
         if(self.cleaned_data['is_valuable'] == True):
             self.checkin_email(item)
             
