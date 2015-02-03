@@ -5,6 +5,14 @@ from django.utils import timezone
 from django.forms import ModelForm
 from its.users.models import User
 
+class LastStatus(models.Model):
+    item = models.ForeignKey("items.Item")
+    status = models.ForeignKey("items.Status")
+    machine_name = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = "last_status"
+        managed = False
 
 class Action(models.Model):
     action_id = models.AutoField(primary_key=True)
@@ -68,6 +76,7 @@ class Item(models.Model):
     possible_owner = models.ForeignKey(User, related_name='item_possible_owner', null=True)
     possible_owner_contacted = models.BooleanField(default=False)
     returned_to = models.ForeignKey(User, related_name='item_returned_to', null=True)
+    #is_active = models.BooleanField(default=True)
     
     
     class Meta:

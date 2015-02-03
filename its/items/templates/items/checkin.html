@@ -1,6 +1,5 @@
-<htmL>
 {% extends "base.html" %}
-<head>
+
     {% block head %}
     <script>
     
@@ -13,11 +12,8 @@
     </script>
     <script src="{{ STATIC_URL }}js/checkin.js"></script>
     {% endblock %}
-</head> 
 
 
-<body>
-{% block body %}
 {% block content %}
 <form action="" method="post">
     {% csrf_token %}
@@ -28,8 +24,8 @@
     <tr><th>{{ form.category.errors }}</th>
     <th>{{ form.category.label_tag }}</th>
     <th>{{ form.category }}</th></tr>
-    <tr><th>{{ form.description.errors }}bel></th>
-    <th>{{ form.description.label_tag }}bel></th>
+    <tr><th>{{ form.description.errors }}</th>
+    <th>{{ form.description.label_tag }}</th>
     <th>{{ form.description }}</th></tr>
     <tr><th>{{ form.is_valuable.errors }}</th>
     <th>{{ form.is_valuable.label_tag }}</th>
@@ -61,6 +57,3 @@
     <input type="submit" value="Submit" />
 </form>
 {% endblock %}
-{% endblock %}
-</body>
-</html>

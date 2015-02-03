@@ -18,6 +18,7 @@ urlpatterns = patterns(
     url(r'^items/checkout/(?P<item_num>\d+)/$', items.checkout, name='checkout'),
     url(r'^items/admin-action/(?P<item_num>\d+)/$', items.adminaction, name='admin-action'),
     url(r'^items/checkin$', items.checkin, name='checkin'),
+    url(r'^items/checkin$', items.checkin, name='logout'),
 	url(r'^items/checkin$', items.checkin, name='index'),
     url(r'^items/itemlist$', items.itemlist, name='itemlist'),
     url(r'^items/autocomplete/?$', items.autocomplete, name='users-autocomplete'),

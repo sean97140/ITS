@@ -74,7 +74,7 @@ def itemlist(request):
             
             if form.cleaned_data['display_is_valuable_only'] is True:
                 kwargs['is_valuable'] = True
-
+            
             if form.cleaned_data['select_location'] is not None:
                 kwargs['location'] = Location.objects.get(name=form.cleaned_data['select_location']).pk
                 
@@ -84,7 +84,10 @@ def itemlist(request):
             if form.cleaned_data['search_keyword_or_name'] is not '':
                 kwargs['description'] = form.cleaned_data['search_keyword_or_name']
             
-            item_list = Item.objects.filter(**kwargs)
+            item_list = Item.objects.filter(**kwargs).select_related("last_status").filter(laststatus__machine_name="CHECKED_IN")
+            if form.cleaned_data['sort_by'] is not '':
+                item_list = item_list.order_by(form.cleaned_data['sort_by'])
+
             item_filter_form = ItemFilterForm()   
             context = {'items': item_list, 'ItemFilter': ItemFilterForm(request.GET)}
         
