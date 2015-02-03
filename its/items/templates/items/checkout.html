@@ -11,9 +11,6 @@
 <form action="" method="post">
 {% csrf_token %}
 <table>
-<tr><th>{{ form.username.label_tag }}</th>
-<th>{{ form.username }}</th>
-<th>{{ form.username.errors }}</th></tr>
 <tr><th>{{ form.first_name.label_tag }}</th>
 <th>{{ form.first_name }}</th>
 <th>{{ form.first_name.errors }}</th></tr>
