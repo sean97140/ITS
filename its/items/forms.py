@@ -17,7 +17,8 @@ class AdminActionForm(forms.Form):
 
     def clean(self):
         # require note field on action of OTHER
-        cleaned_data = self.cleaned_data
+        #cleaned_data = self.cleaned_data
+        cleaned_data = super().clean()
         action_choice = cleaned_data.get("action_choice")
         note = cleaned_data.get("note")
         
