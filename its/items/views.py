@@ -9,6 +9,59 @@ from django.core.urlresolvers import reverse
 from arcutils.ldap import escape, ldapsearch, parse_profile
 from django.views.generic import ListView
 
+def admin_itemlist(request):
+    
+    if request.method == 'POST':
+    
+        #import pdb; pdb.set_trace()
+        
+        form = ItemSelectForm(request.POST)
+        
+        if form.is_valid():
+        
+    
+        # View item to be setup
+            if form.cleaned_data['action'] == 'View Item':
+                return HttpResponseRedirect(reverse("checkout", args = [form.cleaned_data['item_num']]))
+                
+            elif request.POST['action'] == 'Management Action':
+                return HttpResponseRedirect(reverse("admin-action", args = [form.cleaned_data['item_num']]))
+         
+    if request.method == 'GET':
+        form = ItemFilterForm(request.GET)
+		
+        if form.is_valid() and (form.cleaned_data['select_location'] is not None or form.cleaned_data['select_category'] is not None or form.cleaned_data['display_is_valuable_only'] is not False or form.cleaned_data['search_keyword_or_name'] is not None):
+            
+            kwargs = {}
+            
+            if form.cleaned_data['display_is_valuable_only'] is True:
+                kwargs['is_valuable'] = True
+            
+            if form.cleaned_data['select_location'] is not None:
+                kwargs['location'] = Location.objects.get(name=form.cleaned_data['select_location']).pk
+                
+            if form.cleaned_data['select_category'] is not None:
+                kwargs['category'] = Category.objects.get(name=form.cleaned_data['select_category']).pk
+            
+            if form.cleaned_data['search_keyword_or_name'] is not '':
+                kwargs['description'] = form.cleaned_data['search_keyword_or_name']
+            
+            item_list = Item.objects.filter(**kwargs)
+            if form.cleaned_data['sort_by'] is not '':
+                item_list = item_list.order_by(form.cleaned_data['sort_by'])
+
+            item_filter_form = ItemFilterForm()   
+            context = {'items': item_list, 'ItemFilter': ItemFilterForm(request.GET)}
+        
+        else:
+        
+            item_filter_form = ItemFilterForm()   
+            item_list = Item.objects.order_by('-pk')
+            context = {'items': item_list, 'ItemFilter': item_filter_form}
+    
+        return render(request, 'items/admin-itemlist.html', context)
+
+
 def adminaction(request, item_num):
     
     chosen_item = get_object_or_404(Item, pk=item_num)
