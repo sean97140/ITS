@@ -112,12 +112,11 @@ class ItemSelectForm(forms.Form):
 class ItemFilterForm(forms.Form):
 
     sort_choices= (
-        ('', '--------'),
+        ('pk', 'Date found'),
         ('location', 'Location'),
         ('category', 'Category'),
         ('description', 'Description'),
         ('possible_owner', 'Possible owner'),
-        ('found_on' , 'Date found'),
     )
 
     select_location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
@@ -156,6 +155,22 @@ class CheckInForm(ModelForm):
 
         EmailMessage(subject, message, to=to, from_email=from_email).send()
 	
+    def user_checkin_email(self, item, possible_owner):
+        
+        subject = 'An item belonging to you was found'
+        to = [possible_owner.email]
+        from_email = settings.CHECKIN_EMAIL_FROM
+
+        ctx = {
+            'possible_owner_name': str(item.possible_owner),
+            'found_in': item.location.name,           
+        }
+        
+        message = render_to_string('items/user_checkin_email.txt', ctx)
+
+        EmailMessage(subject, message, to=to, from_email=from_email).send()
+	
+    
     def clean(self):
         #import pdb; pdb.set_trace()
         cleaned_data = super(CheckInForm, self).clean()
@@ -184,25 +199,41 @@ class CheckInForm(ModelForm):
         #import pdb; pdb.set_trace()
         
         if(self.cleaned_data['username'] != ''):
-            new_username = self.cleaned_data['username']
-            new_first_name = self.cleaned_data['first_name']
-            new_last_name = self.cleaned_data['last_name']
-            new_email = self.cleaned_data['email']
-                
-            new_user = User(first_name = new_first_name, last_name = new_last_name,
-                            email = new_email, username = new_username,
-                            is_active=False, is_staff=False)
-                            
-            new_user.save()
-            
-        else:
-            new_user = None
         
-        self.instance.possible_owner = new_user
+            try:
+                checkin_user = User.objects.get(first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'], email=self.cleaned_data['email'])
+            except User.DoesNotExist:
+                checkin_user = None
+
+          
+            if checkin_user is None:
+           
+                new_username = self.cleaned_data['username']
+                check_for_user = None
+                i = 0
+            
+                while check_for_user is None:
+                
+                    try:
+                        check_for_user = User.objects.get(username=new_username + str(i))
+                    except User.DoesNotExist:
+                        check_for_user = new_username + str(i)
+                
+                    ++i
+                    
+                checkin_user = User(first_name = self.cleaned_data['first_name'], last_name = self.cleaned_data['last_name'], 
+                email = self.cleaned_data['email'], username = check_for_user, is_active=False, is_staff=False)
+                
+                checkin_user.save()
+                
+        self.instance.possible_owner = checkin_user
         item = super(CheckInForm, self).save(*args, **kwargs)
         
         new_action = Action.objects.get(name="Checked in")
         new_status = Status(item=item, action_taken=new_action, note="Initial check-in", performed_by=current_user).save()
+        
+        if(self.cleaned_data['email'] != ''):
+            self.user_checkin_email(item, checkin_user)
         
         if(self.cleaned_data['is_valuable'] == True):
             self.checkin_email(item)
