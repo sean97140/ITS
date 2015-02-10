@@ -9,6 +9,16 @@ from django.core.urlresolvers import reverse
 from arcutils.ldap import escape, ldapsearch, parse_profile
 from django.views.generic import ListView
 
+def view_item(request, item_num):
+    
+    chosen_item = get_object_or_404(Item, pk=item_num)
+    status_list = Status.objects.filter(item=item_num)
+    context = {'item': chosen_item,
+               'status_list': status_list}
+
+    return render(request, 'items/view_item.html', context)
+
+
 def admin_itemlist(request):
     
     if request.method == 'POST':
@@ -19,10 +29,8 @@ def admin_itemlist(request):
         
         if form.is_valid():
         
-    
-        # View item to be setup
             if form.cleaned_data['action'] == 'View Item':
-                return HttpResponseRedirect(reverse("checkout", args = [form.cleaned_data['item_num']]))
+                return HttpResponseRedirect(reverse("view_item", args = [form.cleaned_data['item_num']]))
                 
             elif request.POST['action'] == 'Management Action':
                 return HttpResponseRedirect(reverse("admin-action", args = [form.cleaned_data['item_num']]))
@@ -74,7 +82,7 @@ def adminaction(request, item_num):
         
         if form.is_valid():
 
-            form.save(item_pk=item_num)	
+            form.save(item_pk=item_num, current_user=request.user)	
             return HttpResponseRedirect(reverse("itemlist"))
     
     else:
