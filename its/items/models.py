@@ -6,8 +6,10 @@ from django.forms import ModelForm
 from its.users.models import User
 
 class LastStatus(models.Model):
-    item = models.ForeignKey("items.Item")
-    status = models.ForeignKey("items.Status")
+    # Because this is only a view in the database we want to 
+    # do nothing when the parent object is deleted.
+    item = models.ForeignKey("items.Item", on_delete=models.DO_NOTHING)
+    status = models.ForeignKey("items.Status", on_delete=models.DO_NOTHING)
     machine_name = models.CharField(max_length=50)
 
     class Meta:
@@ -76,7 +78,7 @@ class Item(models.Model):
     possible_owner = models.ForeignKey(User, related_name='item_possible_owner', null=True)
     possible_owner_contacted = models.BooleanField(default=False)
     returned_to = models.ForeignKey(User, related_name='item_returned_to', null=True)
-    #is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     
     
     class Meta:
