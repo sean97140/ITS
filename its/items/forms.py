@@ -17,7 +17,6 @@ class AdminActionForm(forms.Form):
 
     def clean(self):
         # require note field on action of OTHER
-        #cleaned_data = self.cleaned_data
         cleaned_data = super().clean()
         action_choice = cleaned_data.get("action_choice")
         note = cleaned_data.get("note")
@@ -30,12 +29,12 @@ class AdminActionForm(forms.Form):
         return cleaned_data
   
    
-    def save(self, *args, item_pk, **kwargs):
+    def save(self, *args, item_pk, current_user, **kwargs):
 
         # save status
         item = Item.objects.get(pk=item_pk)
         new_action = Action.objects.get(name=self.cleaned_data['action_choice'])
-        new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note']).save()
+        new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note'], performed_by=current_user).save()
         
     
     
