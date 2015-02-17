@@ -11,6 +11,9 @@ from django.views.generic import ListView
 
 def view_item(request, item_num):
     
+    if request.method == 'POST' and request.POST['action'] == "Return to item listing":
+        return HttpResponseRedirect(reverse("admin-itemlist"))
+    
     chosen_item = get_object_or_404(Item, pk=item_num)
     status_list = Status.objects.filter(item=item_num)
     context = {'item': chosen_item,
@@ -20,24 +23,16 @@ def view_item(request, item_num):
 
 
 def admin_itemlist(request):
+        
+    if request.method == 'GET' and request.GET.get('action') == "Reset":
+        
+        item_filter_form = ItemFilterForm()   
+        item_list = Item.objects.order_by('-pk')
     
-    if request.method == 'POST':
-    
-        #import pdb; pdb.set_trace()
-        
-        form = ItemSelectForm(request.POST)
-        
-        if form.is_valid():
-        
-            if form.cleaned_data['action'] == 'View Item':
-                return HttpResponseRedirect(reverse("view_item", args = [form.cleaned_data['item_num']]))
-                
-            elif request.POST['action'] == 'Management Action':
-                return HttpResponseRedirect(reverse("admin-action", args = [form.cleaned_data['item_num']]))
-         
-    if request.method == 'GET':
-        form = ItemFilterForm(request.GET)
+    if request.method == 'GET' and request.GET.get('action') == "Filter":
 		
+        form = ItemFilterForm(request.GET)
+        
         if form.is_valid() and (form.cleaned_data['select_location'] is not None or form.cleaned_data['select_category'] is not None or form.cleaned_data['display_is_valuable_only'] is not False or form.cleaned_data['search_keyword_or_name'] is not None):
             
             kwargs = {}
@@ -58,16 +53,17 @@ def admin_itemlist(request):
             if form.cleaned_data['sort_by'] is not '':
                 item_list = item_list.order_by(form.cleaned_data['sort_by'])
 
-            item_filter_form = ItemFilterForm()   
-            context = {'items': item_list, 'ItemFilter': ItemFilterForm(request.GET)}
+            item_filter_form = ItemFilterForm(request.GET)   
         
-        else:
+    else:
         
-            item_filter_form = ItemFilterForm()   
-            item_list = Item.objects.order_by('-pk')
-            context = {'items': item_list, 'ItemFilter': item_filter_form}
+        item_filter_form = ItemFilterForm()   
+        item_list = Item.objects.order_by('-pk')
     
-        return render(request, 'items/admin-itemlist.html', context)
+    return render(request, 'items/admin-itemlist.html', {
+        'items': item_list, 
+        'ItemFilter': item_filter_form,
+        })
 
 
 def adminaction(request, item_num):
@@ -93,40 +89,36 @@ def adminaction(request, item_num):
 
 def checkout(request, item_num):
     
-    chosen_item = get_object_or_404(Item, pk=item_num)
-
+    
     if request.method == 'POST':
     
-        form = ItemReturnForm(request.POST)
-        
-        if form.is_valid():
-
-            form.save(item_pk=item_num, performed_by=request.user)	
+        if request.POST['action'] == 'Cancel':
             return HttpResponseRedirect(reverse("itemlist"))
+        
+        if request.POST['action'] == "Return Item":
     
-    else:
-        form = ItemReturnForm()
+            form = ItemReturnForm(request.POST)
+        
+            if form.is_valid():
+
+                form.save(item_pk=item_num, performed_by=request.user)	
+                return HttpResponseRedirect(reverse("itemlist"))
+    
+    chosen_item = get_object_or_404(Item, pk=item_num)
+    form = ItemReturnForm()
         
     return render(request, 'items/checkout.html', {'form': form, 'item': chosen_item})
 
 def itemlist(request):
 
+
+    if request.method == 'GET' and request.GET.get('action') == "Reset":
+        
+        item_filter_form = ItemFilterForm()   
+        item_list = Item.objects.order_by('-pk')
     
-    if request.method == 'POST':
-    
-        #import pdb; pdb.set_trace()
+    if request.method == 'GET' and request.GET.get('action') == "Filter":
         
-        form = ItemSelectForm(request.POST)
-        
-        if form.is_valid():
-        
-            if form.cleaned_data['action'] == 'Attendant Return':
-                return HttpResponseRedirect(reverse("checkout", args = [form.cleaned_data['item_num']]))
-                
-            elif request.POST['action'] == 'Management Action':
-                return HttpResponseRedirect(reverse("admin-action", args = [form.cleaned_data['item_num']]))
-         
-    if request.method == 'GET':
         form = ItemFilterForm(request.GET)
 		
         if form.is_valid() and (form.cleaned_data['select_location'] is not None or form.cleaned_data['select_category'] is not None or form.cleaned_data['display_is_valuable_only'] is not False or form.cleaned_data['search_keyword_or_name'] is not None):
@@ -146,19 +138,21 @@ def itemlist(request):
                 kwargs['description'] = form.cleaned_data['search_keyword_or_name']
             
             item_list = Item.objects.filter(**kwargs).select_related("last_status").filter(laststatus__machine_name="CHECKED_IN")
+            
             if form.cleaned_data['sort_by'] is not '':
                 item_list = item_list.order_by(form.cleaned_data['sort_by'])
 
-            item_filter_form = ItemFilterForm()   
-            context = {'items': item_list, 'ItemFilter': ItemFilterForm(request.GET)}
+            item_filter_form = ItemFilterForm(request.GET)   
+  
+    else:
         
-        else:
-        
-            item_filter_form = ItemFilterForm()   
-            item_list = Item.objects.order_by('-pk')
-            context = {'items': item_list, 'ItemFilter': item_filter_form}
-    
-        return render(request, 'items/itemlist.html', context)
+        item_filter_form = ItemFilterForm()   
+        item_list = Item.objects.filter().select_related("last_status").filter(laststatus__machine_name="CHECKED_IN").order_by('-pk')
+
+    return render(request, 'items/itemlist.html', {
+        'items': item_list,
+        'ItemFilter': item_filter_form,
+        })
 
         
 
@@ -194,6 +188,10 @@ def autocomplete(request):
     
     
 def printoff(request, item_id):
+    
+    if request.method == 'POST' and request.POST['action'] == "Return to item check-in":
+        return HttpResponseRedirect(reverse("checkin"))
+        
     item = get_object_or_404(Item, pk=item_id)
     return render(request, 'items/printoff.html', {'item': item})
 	
