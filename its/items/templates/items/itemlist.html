@@ -1,19 +1,21 @@
-<html>
-<head>
+{% extends "base.html" %}
+
+{% block head %}
 <style>
 .valuable {
    font-weight: bold;
    font-style: italic;
 }
 </style>
-</head>
+{% endblock %}
 
-<body>
+{% block content %}
     <h2>Items</h2>
     <form action="" method="get">
     {% csrf_token %}
     {{ ItemFilter }}
-    <input type="submit" value="Filter" />
+    <input type="submit" name="action" value="Filter" />
+    <input type="submit" name="action" value="Reset" />
     </form>
     <table>
         <tr><th>Select</th>
@@ -23,8 +25,6 @@
             <th>Possible owner</th>
             <th>Possible owner contacted</th>
             <th>Status</th></tr>
-        <form action="" method="post">
-        {% csrf_token %}
         {% for item in items %}
             {% if item.is_valuable %}
                 <tr class="valuable">
@@ -32,8 +32,7 @@
                 <tr>
             {% endif %}
             
-            <th>ACTION VIEW<input type="radio" name="item_num" value={{ item.pk }}></th>
-
+            <th><a href="checkout/{{ item.pk }}">Return</a></th>
             <th>{{ item.location }}</th>
             <th>{{ item.category }}</th>
             <th>{{ item.description }}</th>
@@ -42,8 +41,4 @@
             <th>{{ item.last_status.action_taken }}</th></tr>
         {% endfor %}
      </table>
-        <br><input type="submit" name="action" value="Attendant Return"><br><br>
-        <input type="submit" name="action" value="Management Action">
-        </form>
-</body>
-<html>
+{% endblock %}

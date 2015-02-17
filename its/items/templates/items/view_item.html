@@ -1,5 +1,6 @@
-<html>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
 <h3>Item view</h3>
 
 <h3>Description: {{ item.description }}</h3>
@@ -24,6 +25,9 @@
             <th>{{ status.note }}</th></tr>
         {% endfor %}
 </table>
-
-</body>
-<html>
+<br>
+<form action="" method="post">
+    {% csrf_token %}
+    <input type="submit" name="action" value="Return to item listing"><br><br>
+</form>
+{% endblock %}
