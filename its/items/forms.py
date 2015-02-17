@@ -86,7 +86,7 @@ class ItemReturnForm(forms.Form):
                 except User.DoesNotExist:
                     check_for_user = new_username + str(i)
                 
-                ++i
+                i += i
                     
             returned_user = User(first_name = self.cleaned_data['first_name'], last_name = self.cleaned_data['last_name'], 
             email = self.cleaned_data['email'], username = check_for_user, is_active=False, is_staff=False)
@@ -106,6 +106,7 @@ class ItemReturnForm(forms.Form):
         return returned_item    
 
 class ItemSelectForm(forms.Form):
+
     item_num = forms.IntegerField(required=True)
     action = forms.CharField(max_length=50, required=True)
 
@@ -219,14 +220,15 @@ class CheckInForm(ModelForm):
                     except User.DoesNotExist:
                         check_for_user = new_username + str(i)
                 
-                    ++i
+                    i += i
                     
                 checkin_user = User(first_name = self.cleaned_data['first_name'], last_name = self.cleaned_data['last_name'], 
                 email = self.cleaned_data['email'], username = check_for_user, is_active=False, is_staff=False)
                 
                 checkin_user.save()
                 
-        self.instance.possible_owner = checkin_user
+                self.instance.possible_owner = checkin_user
+        
         item = super(CheckInForm, self).save(*args, **kwargs)
         
         new_action = Action.objects.get(name="Checked in")
