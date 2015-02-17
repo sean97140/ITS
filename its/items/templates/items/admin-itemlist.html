@@ -1,10 +1,12 @@
-<html>
-<body>
+{% extends "base.html" %}
+
+{% block content %}
     <h2>Items</h2>
     <form action="" method="get">
     {% csrf_token %}
     {{ ItemFilter }}
-    <input type="submit" value="Filter" />
+    <input type="submit" name="action" value="Filter" />
+    <input type="submit" name="action" value="Reset" />
     </form>
     <table>
         <tr><th>Select</th>
@@ -21,10 +23,8 @@
             <th>Last action performed on</th>
             <th>Last action notes</th>
             <th>Last action taken by</th></tr>
-        <form action="" method="post">
-        {% csrf_token %}
         {% for item in items %}
-            <tr><th>ACTION VIEW<input type="radio" name="item_num" value={{ item.pk }}></th>
+            <tr><th><a href="view/{{ item.pk }}/">View</a> <a href="admin-action/{{ item.pk }}/">Action</a></th>
             <th>{{ item.found_on }}</th>
             <th>{{ item.found_by }}</th>
             <th>{{ item.location }}</th>
@@ -40,8 +40,4 @@
             <th>{{ item.last_status.performed_by }}</th></tr>
         {% endfor %}
      </table>
-        <br><input type="submit" name="action" value="View Item"><br><br>
-        <input type="submit" name="action" value="Management Action">
-        </form>
-</body>
-<html>
+{% endblock %}
