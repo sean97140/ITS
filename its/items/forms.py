@@ -1,3 +1,4 @@
+
 from django.db import models
 from django import forms
 from django.conf import settings
@@ -8,6 +9,24 @@ from django.core.mail import send_mail
 from django.template import Context
 from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
+
+def create_user(new_first_name, new_last_name, new_email):
+
+    #import pdb; pdb.set_trace()
+            
+    new_username = '_' + new_first_name + new_last_name
+    i = 0
+            
+    while User.objects.filter(username=new_username + str(i)).exists():
+        i += 1
+                
+    new_username = new_username + str(i)                 
+    new_user = User(first_name = new_first_name, last_name = new_last_name, 
+    email = new_email, username = new_username, is_active=False, is_staff=False)
+                
+    new_user.save()
+    
+    return new_user
 
 class AdminActionForm(forms.Form):
     
@@ -66,33 +85,18 @@ class ItemReturnForm(forms.Form):
 	
 
     def save(self, *args, item_pk, performed_by, **kwargs):
-    
-        try:
-            returned_user = User.objects.get(first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'], email=self.cleaned_data['email'])
-        except User.DoesNotExist:
-            returned_user = None
-
-          
-        if returned_user is None:
-           
-            new_username = '_' + self.cleaned_data['first_name'] + self.cleaned_data['last_name']
-            check_for_user = None
-            i = 0
-            
-            while check_for_user is None:
+        
+        user_first_name = self.cleaned_data['first_name']
+        user_last_name = self.cleaned_data['last_name']
+        user_email = self.cleaned_data['email']
+        
+        if User.objects.filter(first_name=user_first_name, last_name=user_last_name, email=user_email).exists() is True:
+            returned_user = User.objects.get(first_name=user_first_name, last_name=user_last_name, email=user_email)
                 
-                try:
-                    check_for_user = User.objects.get(username=new_username + str(i))
-                except User.DoesNotExist:
-                    check_for_user = new_username + str(i)
-                
-                i += i
-                    
-            returned_user = User(first_name = self.cleaned_data['first_name'], last_name = self.cleaned_data['last_name'], 
-            email = self.cleaned_data['email'], username = check_for_user, is_active=False, is_staff=False)
-                
-            returned_user.save()
-
+        else:
+            returned_user = create_user(user_first_name, user_last_name, user_email)
+        
+        
         returned_item = Item.objects.get(pk=item_pk)
         returned_item.returned_to = returned_user
         returned_item.save()
@@ -110,6 +114,23 @@ class ItemSelectForm(forms.Form):
     item_num = forms.IntegerField(required=True)
     action = forms.CharField(max_length=50, required=True)
 
+    
+class AdminItemFilterForm(forms.Form):
+    sort_choices= (
+        ('pk', 'Date found'),
+        ('location', 'Location'),
+        ('category', 'Category'),
+        ('description', 'Description'),
+        ('possible_owner', 'Possible owner'),
+    )
+
+    select_location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
+    select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
+    sort_by = forms.ChoiceField(choices=sort_choices, required=False)
+    display_is_valuable_only = forms.BooleanField(required=False)
+    display_inactive_only = forms.BooleanField(required=False)
+    search_keyword_or_name = forms.CharField(max_length=50, required=False)
+    
 class ItemFilterForm(forms.Form):
 
     sort_choices= (
@@ -199,36 +220,21 @@ class CheckInForm(ModelForm):
         
         #import pdb; pdb.set_trace()
         
-        if(self.cleaned_data['username'] != ''):
+        user_first_name = self.cleaned_data['first_name']
+        user_last_name = self.cleaned_data['last_name']
+        user_email = self.cleaned_data['email']
         
-            try:
-                checkin_user = User.objects.get(first_name=self.cleaned_data['first_name'], last_name=self.cleaned_data['last_name'], email=self.cleaned_data['email'])
-            except User.DoesNotExist:
-                checkin_user = None
-
-          
-            if checkin_user is None:
-           
-                new_username = self.cleaned_data['username']
-                check_for_user = None
-                i = 0
+        
+        if self.cleaned_data.get("possible_owner_found") is True:
+        
+            if User.objects.filter(first_name=user_first_name, last_name=user_last_name, email=user_email).exists() is True:
+                checkin_user = User.objects.get(first_name=user_first_name, last_name=user_last_name, email=user_email)
+                
+            else:
+                checkin_user = create_user(user_first_name, user_last_name, user_email)
             
-                while check_for_user is None:
-                
-                    try:
-                        check_for_user = User.objects.get(username=new_username + str(i))
-                    except User.DoesNotExist:
-                        check_for_user = new_username + str(i)
-                
-                    i += i
-                    
-                checkin_user = User(first_name = self.cleaned_data['first_name'], last_name = self.cleaned_data['last_name'], 
-                email = self.cleaned_data['email'], username = check_for_user, is_active=False, is_staff=False)
-                
-                checkin_user.save()
-                
-                self.instance.possible_owner = checkin_user
-        
+            self.instance.possible_owner = checkin_user
+            
         item = super(CheckInForm, self).save(*args, **kwargs)
         
         new_action = Action.objects.get(name="Checked in")
