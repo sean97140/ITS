@@ -1,13 +1,5 @@
 {% extends "base.html" %}
 
-{% block head %}
-<style>
-.valuable {
-   font-weight: bold;
-   font-style: italic;
-}
-</style>
-{% endblock %}
 
 {% block content %}
     <h2>Items</h2>
@@ -17,7 +9,7 @@
     <input type="submit" name="action" value="Filter" />
     <input type="submit" name="action" value="Reset" />
     </form>
-    <table>
+    <table class="table table-condensed table-striped">
         <tr><th>Select</th>
             <th>Location</th>
             <th>Category</th>
@@ -27,12 +19,12 @@
             <th>Status</th></tr>
         {% for item in items %}
             {% if item.is_valuable %}
-                <tr class="valuable">
+                <tr class="danger">
             {% else %}
                 <tr>
             {% endif %}
             
-            <th><a href="checkout/{{ item.pk }}">Return</a></th>
+            <th><a href="{% url 'checkout' item.pk %}">Return</a></th>
             <th>{{ item.location }}</th>
             <th>{{ item.category }}</th>
             <th>{{ item.description }}</th>
