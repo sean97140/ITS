@@ -26,8 +26,6 @@
         {% endfor %}
 </table>
 <br>
-<form action="" method="post">
-    {% csrf_token %}
-    <input type="submit" name="action" value="Return to item listing"><br><br>
-</form>
+<a href="{% url 'admin-itemlist'%}">Return to item listing</a>
+
 {% endblock %}
