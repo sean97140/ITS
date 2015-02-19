@@ -16,10 +16,7 @@
 <h3>Found by: {{ item.found_by }}</h3>
 
 <br>
-<form action="" method="post">
-    {% csrf_token %}
-    <input type="submit" name="action" value="Return to item check-in"><br><br>
-</form>
+<a href="{% url 'checkin' %}">Return to item check-in</a>
 {% endblock %}
 
 
