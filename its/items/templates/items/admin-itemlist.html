@@ -1,14 +1,22 @@
 {% extends "base.html" %}
 
+    {% block head %}
+    <script src="{{ STATIC_URL }}js/admin-itemlist.js"></script>
+    {% endblock %}
+
+
 {% block content %}
-    <h2>Items</h2>
+    <h2>Admin Items</h2>
     <form action="" method="get">
     {% csrf_token %}
     {{ ItemFilter }}
     <input type="submit" name="action" value="Filter" />
     <input type="submit" name="action" value="Reset" />
     </form>
-    <table>
+    
+    <form action ="" method="post">
+        {% csrf_token %}
+    <table class="table table-condensed table-striped">
         <tr><th>Select</th>
             <th>Found on</th>
             <th>Found by</th>
@@ -22,9 +30,15 @@
             <th>Last action</th>
             <th>Last action performed on</th>
             <th>Last action notes</th>
-            <th>Last action taken by</th></tr>
+            <th>Last action taken by</th>
+            <th>Archive<input type="checkbox" name="select_all" value="" id="select_all"></th></tr>
         {% for item in items %}
-            <tr><th><a href="view/{{ item.pk }}/">View</a> <a href="admin-action/{{ item.pk }}/">Action</a></th>
+            {% if item.is_valuable %}
+                <tr class="danger">
+            {% else %}
+                <tr>
+            {% endif %}
+            <th><a href="{% url 'view_item' item.pk %}">View</a> <a href="{% url 'admin-action' item.pk %}">Action</a></th>
             <th>{{ item.found_on }}</th>
             <th>{{ item.found_by }}</th>
             <th>{{ item.location }}</th>
@@ -37,7 +51,10 @@
             <th>{{ item.last_status.action_taken }}</th>
             <th>{{ item.last_status.timestamp }}</th>
             <th>{{ item.last_status.note }}</th>
-            <th>{{ item.last_status.performed_by }}</th></tr>
+            <th>{{ item.last_status.performed_by }}</th>
+            <th><input type="checkbox" name="choices" value="{{ item.pk }}" class="checkbox_archive"></th></tr>
         {% endfor %}
      </table>
+     <input type="submit" name="action" value="Archive selected items" />
+     </form>
 {% endblock %}

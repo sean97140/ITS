@@ -3,17 +3,17 @@ from django.template import RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from its.items.models import Item, Location, Category, Status, Action
 from its.users.models import User
-from its.items.forms import CheckInForm, ItemFilterForm, ItemSelectForm, ItemReturnForm, AdminActionForm
+from its.items.forms import CheckInForm, ItemFilterForm, AdminItemFilterForm, ItemSelectForm, ItemReturnForm, AdminActionForm
 from django.forms.models import model_to_dict
 from django.core.urlresolvers import reverse
 from arcutils.ldap import escape, ldapsearch, parse_profile
 from django.views.generic import ListView
+from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 
-def view_item(request, item_num):
-    
-    if request.method == 'POST' and request.POST['action'] == "Return to item listing":
-        return HttpResponseRedirect(reverse("admin-itemlist"))
-    
+@staff_member_required
+def view_item(request, item_num):    
+        
     chosen_item = get_object_or_404(Item, pk=item_num)
     status_list = Status.objects.filter(item=item_num)
     context = {'item': chosen_item,
@@ -21,22 +21,39 @@ def view_item(request, item_num):
 
     return render(request, 'items/view_item.html', context)
 
-
+    
+@staff_member_required
 def admin_itemlist(request):
+
+    if request.method == 'POST' and request.POST['action'] == "Archive selected items":
+        #import pdb; pdb.set_trace()
+        
+        choices = request.POST.getlist('choices')
+        
+        for choice in choices:
+            item = Item.objects.get(pk=choice)
+            item.is_active = False
+            item.save()
+        
+        return HttpResponseRedirect(reverse("admin-itemlist"))
+        
         
     if request.method == 'GET' and request.GET.get('action') == "Reset":
         
-        item_filter_form = ItemFilterForm()   
+        item_filter_form = AdminItemFilterForm()   
         item_list = Item.objects.order_by('-pk')
     
     if request.method == 'GET' and request.GET.get('action') == "Filter":
 		
-        form = ItemFilterForm(request.GET)
+        form = AdminItemFilterForm(request.GET)
         
         if form.is_valid() and (form.cleaned_data['select_location'] is not None or form.cleaned_data['select_category'] is not None or form.cleaned_data['display_is_valuable_only'] is not False or form.cleaned_data['search_keyword_or_name'] is not None):
             
             kwargs = {}
             
+            if form.cleaned_data['display_inactive_only'] is True:
+                kwargs['is_active'] = False
+                
             if form.cleaned_data['display_is_valuable_only'] is True:
                 kwargs['is_valuable'] = True
             
@@ -53,24 +70,28 @@ def admin_itemlist(request):
             if form.cleaned_data['sort_by'] is not '':
                 item_list = item_list.order_by(form.cleaned_data['sort_by'])
 
-            item_filter_form = ItemFilterForm(request.GET)   
+            item_filter_form = AdminItemFilterForm(request.GET)   
         
     else:
         
-        item_filter_form = ItemFilterForm()   
-        item_list = Item.objects.order_by('-pk')
+        item_filter_form = AdminItemFilterForm()   
+        item_list = Item.objects.filter(is_active=True).order_by('-pk')
     
     return render(request, 'items/admin-itemlist.html', {
         'items': item_list, 
         'ItemFilter': item_filter_form,
         })
 
-
+        
+@staff_member_required
 def adminaction(request, item_num):
     
     chosen_item = get_object_or_404(Item, pk=item_num)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and request.POST['action'] == "Cancel":
+        return HttpResponseRedirect(reverse("admin-itemlist"))
+    
+    if request.method == 'POST' and request.POST['action'] == "Perform action":
     
         #import pdb; pdb.set_trace()
     
@@ -79,14 +100,15 @@ def adminaction(request, item_num):
         if form.is_valid():
 
             form.save(item_pk=item_num, current_user=request.user)	
-            return HttpResponseRedirect(reverse("itemlist"))
+            return HttpResponseRedirect(reverse("admon-itemlist"))
     
     else:
         form = AdminActionForm()
         
     return render(request, 'items/admin-action.html', {'form': form, 'item': chosen_item})
 
-
+    
+@login_required
 def checkout(request, item_num):
     
     
@@ -109,6 +131,8 @@ def checkout(request, item_num):
         
     return render(request, 'items/checkout.html', {'form': form, 'item': chosen_item})
 
+    
+@login_required
 def itemlist(request):
 
 
@@ -155,7 +179,7 @@ def itemlist(request):
         })
 
         
-
+@login_required
 def checkin(request):
     if request.method == 'POST':
         form = CheckInForm(request.POST)
@@ -171,6 +195,7 @@ def checkin(request):
 
     
 """Does an LDAP search and returns a JSON array of objects"""
+@login_required
 def autocomplete(request):
     q = escape(request.GET['query'])
     search = '(& (| (uid={q}*) (cn={q}*)) (psuprivate=N))'.format(q=q)
@@ -186,7 +211,8 @@ def autocomplete(request):
         
     return JsonResponse(output, safe=False)
     
-    
+
+@login_required
 def printoff(request, item_id):
     
     if request.method == 'POST' and request.POST['action'] == "Return to item check-in":
