@@ -17,22 +17,54 @@
 {% block content %}
 <form action="" method="post">
     {% csrf_token %}
-	<table>
-    <tr><th>{{ form.location.errors }}</th>
-    <th>{{ form.location.label_tag }}</th>
-    <th>{{ form.location }}</th></tr>
-    <tr><th>{{ form.category.errors }}</th>
-    <th>{{ form.category.label_tag }}</th>
-    <th>{{ form.category }}</th></tr>
-    <tr><th>{{ form.description.errors }}</th>
-    <th>{{ form.description.label_tag }}</th>
-    <th>{{ form.description }}</th></tr>
-    <tr><th>{{ form.is_valuable.errors }}</th>
-    <th>{{ form.is_valuable.label_tag }}</th>
-    <th>{{ form.is_valuable }}</th></tr>
-    <tr><th>{{ form.possible_owner_found.errors }}</th>
-    <th>{{ form.possible_owner_found.label_tag }}</th>
-    <th>{{ form.possible_owner_found }}</th></tr>
+    <div class="row">
+        <div class="col-md-2">
+            {{ form.location|bootstrap }}
+        </div>
+        <div class="col-md-2">
+            {{ form.category|bootstrap }}
+        </div>
+     </div>
+    {{ form.description|bootstrap }}
+    {{ form.is_valuable|bootstrap }}
+    {{ form.possible_owner_found|bootstrap }}
+	<!-- <table>
+        <tr>
+            <th>{{ form.location.errors }}</th>
+            <th>{{ form.location.label_tag }}</th>
+            <th>{{ form.location }}</th>
+        </tr>
+        <tr>
+            <th>{{ form.category.errors }}</th>
+            <th>{{ form.category.label_tag }}</th>
+            <th>{{ form.category }}</th>
+        </tr>
+        <tr>
+            <th>{{ form.description.errors }}</th>
+            <th>{{ form.description.label_tag }}</th>
+            <th>{{ form.description }}</th>
+        </tr>
+        <tr>
+            <th>{{ form.is_valuable.errors }}</th>
+            <th>{{ form.is_valuable.label_tag }}</th>
+            <th>{{ form.is_valuable }}</th>
+        </tr>
+        <tr>
+            <th>{{ form.possible_owner_found.errors }}</th>
+            <th>{{ form.possible_owner_found.label_tag }}</th>
+            <th>{{ form.possible_owner_found }}</th>
+        </tr>
+    </table>-->
+    <div class="PossibleOwner">
+        {{ form.ldap_search|bootstrap }}
+        {{ form.username|bootstrap }}
+        {{ form.first_name|bootstrap }}
+        {{ form.last_name|bootstrap }}
+        {{ form.email|bootstrap }}
+        {{ form.possible_owner_contacted|bootstrap }}
+        
+    </div>
+    <!--
     <table class="PossibleOwner">
     <tr><th>{{ form.ldap_search.errors }}</th>
     <th>{{ form.ldap_search.label_tag }}</th>
@@ -52,8 +84,7 @@
     <tr><th>{{ form.possible_owner_contacted.errors }}</th>
     <th>{{ form.possible_owner_contacted.label_tag }}</th>
     <th>{{ form.possible_owner_contacted }}</th></tr>
-    </table>
-	</table>
+    </table>-->
     <input type="submit" value="Submit" />
 </form>
 {% endblock %}
