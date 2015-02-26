@@ -151,14 +151,16 @@ class ItemFilterForm(forms.Form):
 class CheckInForm(ModelForm):
     
     possible_owner_found = forms.BooleanField(required=False)
-    username = forms.CharField(required=False)
+    username = forms.CharField(required=False, help_text="Or enter a first/last name")
     first_name = forms.CharField(required=False)
     last_name = forms.CharField(required=False)
     email = forms.CharField(required=False)
     ldap_search = forms.CharField(required=False)
 	
     def checkin_email(self, item):
-    
+        """
+        Send an email to all the admins when a valuable item is checked in
+        """
         subject = 'Valuable item checked in'
         to = settings.CHECKIN_EMAIL_TO
         from_email = settings.CHECKIN_EMAIL_FROM
