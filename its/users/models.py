@@ -4,10 +4,10 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager
 
 class User(AbstractBaseUser):
     user_id = models.AutoField(primary_key=True)
-    email = models.EmailField(max_length=255, unique=True)
+    email = models.EmailField(max_length=255)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    username = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     # For new possible owner, item checkin, set their user to inactive.
     # Auto generate a unique username for people without odin accounts.
