@@ -128,7 +128,7 @@ class AdminItemFilterForm(forms.Form):
     select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
     sort_by = forms.ChoiceField(choices=sort_choices, required=False)
     display_is_valuable_only = forms.BooleanField(required=False)
-    display_inactive_only = forms.BooleanField(required=False)
+    display_archived_only = forms.BooleanField(required=False)
     search_keyword_or_name = forms.CharField(max_length=50, required=False)
     
 class ItemFilterForm(forms.Form):
