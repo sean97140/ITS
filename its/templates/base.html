@@ -28,12 +28,12 @@
 
         <div class="{% if user.is_cloaked %}cloak-pushdown{% endif %}">
             <div class="container" id="header">
-                <a href="http://www.pdx.edu"><img src="{% static 'img/logo.png' %}" alt="Home"></a>
+                <a class="hidden-print" href="http://www.pdx.edu"><img src="{% static 'img/logo.png' %}" alt="Home"></a>
                 <a id="brand" href="#">{{ project_name }}</a>
 
                 <div id="upper-info">
                     {% if user.is_authenticated %}
-                        <p>logged in as <a href="#">{{ user }}</a></p>
+                        <p class="hidden-print">logged in as <a href="#">{{ user }}</a></p>
                     {% endif %}
                 </div>
             </div>
@@ -71,7 +71,7 @@
             </div>
             <div class="footer">
                 <div class="container text-center text-muted">
-                    <h6>Copyright &copy; {% now "Y" %}</h6>
+                    <h6 class="hidden-print">Copyright &copy; {% now "Y" %}</h6>
                 </div>
             </div>
         </div>
