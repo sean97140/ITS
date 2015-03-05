@@ -51,7 +51,7 @@ def admin_itemlist(request):
             
             kwargs = {}
             
-            if form.cleaned_data['display_inactive_only'] is True:
+            if form.cleaned_data['display_archived_only'] is True:
                 kwargs['is_active'] = False
                 
             if form.cleaned_data['display_is_valuable_only'] is True:
@@ -100,7 +100,7 @@ def adminaction(request, item_num):
         if form.is_valid():
 
             form.save(item_pk=item_num, current_user=request.user)	
-            return HttpResponseRedirect(reverse("admon-itemlist"))
+            return HttpResponseRedirect(reverse("admin-itemlist"))
     
     else:
         form = AdminActionForm()
@@ -181,12 +181,13 @@ def itemlist(request):
         
 @login_required
 def checkin(request):
+
     if request.method == 'POST':
         form = CheckInForm(request.POST)
 		
         if form.is_valid():            
             new_item = form.save(current_user=request.user)	
-            return HttpResponseRedirect(reverse("printoff", args = [new_item.pk]))
+            return HttpResponseRedirect(reverse("printoff", args=[new_item.pk]))
 			
     else:
         form = CheckInForm()
