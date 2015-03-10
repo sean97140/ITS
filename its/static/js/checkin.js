@@ -25,7 +25,8 @@ function initAutoComplete(selector){
         })
         
         // Could also use selector.on .. etc
-        $('#id_ldap_search').on('typeahead:selected', function (object, datum) {
+        // was on #id_ldap_search
+        $('#id_username').on('typeahead:selected', function (object, datum) {
         // Example: {type: "typeahead:selected", timeStamp: 1377890016108, jQuery203017338529066182673: true, isTrigger: 3, namespace: ""...}
         console.log(object);
 
@@ -47,26 +48,33 @@ function initAutoComplete(selector){
         //});
 }
 
+function possibleOwnerCheckbox(){ 
+    
+    if ($("#id_possible_owner_found").is(':checked')) {
+        $(".PossibleOwner").slideDown("fast"); //Slide Down Effect
+    }        
+    else {
+        $(".PossibleOwner").slideUp("fast");  //Slide Up Effect
+    }
+
+}
+
+
+
 
 $(function(){
-    
-   // jQuery methods go here...
-   // hides the element with id="username".
-   $('#id_possible_owner_found').attr('checked', false);
    
-   $(".PossibleOwner").toggle() 
+    // Sets the possibleOwnerFound class fields as shown or hidden on page load
+    possibleOwnerCheckbox();
+
+    // Shows/Hides possibleOwnerFound class fields when the possible owner found checkbox
+    // is clicked on.
+    $("#id_possible_owner_found").click(function(){possibleOwnerCheckbox()});
+
    
-   $('#id_possible_owner_found').click(function() {
-      $(".PossibleOwner").toggle() 
-   })
    
     // add the autocomplete functionality to all the odin fields, but make sure
     // to skip the subform template, which has '__prefix__' in its name
-    initAutoComplete($("#id_ldap_search"));
+    initAutoComplete($("#id_username"));
    
-   
-   
-   // $('#id_username').on('blur', function() {
-   //     alert('Handler for .blur() called.');
-   // });
 }); 
