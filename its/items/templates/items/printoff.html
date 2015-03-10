@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Print this page</h1>
+<h1 class="hidden-print">Print this page</h1>
 
 {% if item.is_valuable %}
 <h1>Valuable Item</h1>
@@ -16,7 +16,7 @@
 <h3>Found by: {{ item.found_by }}</h3>
 
 <br>
-<a href="{% url 'checkin' %}">Return to item check-in</a>
+<a class="hidden-print" href="{% url 'checkin' %}">Return to item check-in</a>
 {% endblock %}
 
 

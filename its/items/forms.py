@@ -90,13 +90,11 @@ class ItemReturnForm(forms.Form):
         user_last_name = self.cleaned_data['last_name']
         user_email = self.cleaned_data['email']
         
-        if User.objects.filter(first_name=user_first_name, last_name=user_last_name, email=user_email).exists() is True:
+        try:
             returned_user = User.objects.get(first_name=user_first_name, last_name=user_last_name, email=user_email)
-                
-        else:
+        except User.DoesNotExist:
             returned_user = create_user(user_first_name, user_last_name, user_email)
-        
-        
+               
         returned_item = Item.objects.get(pk=item_pk)
         returned_item.returned_to = returned_user
         returned_item.save()
@@ -128,7 +126,7 @@ class AdminItemFilterForm(forms.Form):
     select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
     sort_by = forms.ChoiceField(choices=sort_choices, required=False)
     display_is_valuable_only = forms.BooleanField(required=False)
-    display_inactive_only = forms.BooleanField(required=False)
+    display_archived_only = forms.BooleanField(required=False)
     search_keyword_or_name = forms.CharField(max_length=50, required=False)
     
 class ItemFilterForm(forms.Form):
@@ -151,14 +149,15 @@ class ItemFilterForm(forms.Form):
 class CheckInForm(ModelForm):
     
     possible_owner_found = forms.BooleanField(required=False)
-    username = forms.CharField(required=False)
+    username = forms.CharField(required=False, help_text="Or enter a first/last name")
     first_name = forms.CharField(required=False)
     last_name = forms.CharField(required=False)
     email = forms.CharField(required=False)
-    ldap_search = forms.CharField(required=False)
 	
     def checkin_email(self, item):
-    
+        """
+        Send an email to all the admins when a valuable item is checked in
+        """
         subject = 'Valuable item checked in'
         to = settings.CHECKIN_EMAIL_TO
         from_email = settings.CHECKIN_EMAIL_FROM
@@ -202,8 +201,8 @@ class CheckInForm(ModelForm):
         email = cleaned_data.get("email")
         possible_owner_found = cleaned_data.get("possible_owner_found")
 		
-        if possible_owner_found and not username:
-            self.add_error("username", "username required")
+        #if possible_owner_found and not username:
+        #    self.add_error("username", "username required")
             
         if possible_owner_found and not first_name:
             self.add_error("first_name", "First name required")
@@ -226,11 +225,10 @@ class CheckInForm(ModelForm):
         
         
         if self.cleaned_data.get("possible_owner_found") is True:
-        
-            if User.objects.filter(first_name=user_first_name, last_name=user_last_name, email=user_email).exists() is True:
+
+            try:
                 checkin_user = User.objects.get(first_name=user_first_name, last_name=user_last_name, email=user_email)
-                
-            else:
+            except User.DoesNotExist:
                 checkin_user = create_user(user_first_name, user_last_name, user_email)
             
             self.instance.possible_owner = checkin_user

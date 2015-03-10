@@ -55,9 +55,9 @@ DATABASES = {
 
 LOGGING_CONFIG = 'arcutils.logging.basic'
 
-LOGIN_URL = reverse_lazy("home")
+LOGIN_URL = reverse_lazy("login")
 #LOGIN_REDIRECT_URL = reverse_lazy("users-home")
-LOGOUT_URL = reverse_lazy("home")
+LOGOUT_URL = reverse_lazy("logout")
 
 # uncomment to use celery, also update celery.py, and requirements.txt
 #BROKER_URL = 'amqp://guest:guest@localhost//'
@@ -66,7 +66,7 @@ LOGOUT_URL = reverse_lazy("home")
 
 # uncomment to use CAS. You need to update requirements.txt too
 CAS_SERVER_URL = 'https://sso.pdx.edu/cas/'
-AUTHENTICATION_BACKENDS += ('djangocas.backends.CASBackend',)
+AUTHENTICATION_BACKENDS += ('its.backends.ITSBackend',)
 
 
 AUTH_USER_MODEL = 'users.User'
@@ -125,7 +125,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'djangocas.middleware.CASMiddleware',
+    'djangocas.middleware.CASMiddleware',
 )
 
 ROOT_URLCONF = 'its.urls'

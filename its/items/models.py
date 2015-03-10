@@ -78,7 +78,7 @@ class Item(models.Model):
     possible_owner = models.ForeignKey(User, related_name='item_possible_owner', null=True)
     possible_owner_contacted = models.BooleanField(default=False)
     returned_to = models.ForeignKey(User, related_name='item_returned_to', null=True)
-    is_active = models.BooleanField(default=True)
+    is_archived = models.BooleanField(default=False)
     
     
     class Meta:
