@@ -10,6 +10,7 @@ from arcutils.ldap import escape, ldapsearch, parse_profile
 from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
 
 @staff_member_required
 def view_item(request, item_num):    
@@ -32,7 +33,7 @@ def admin_itemlist(request):
         
         for choice in choices:
             item = Item.objects.get(pk=choice)
-            item.is_active = False
+            item.is_archived = True
             item.save()
         
         return HttpResponseRedirect(reverse("admin-itemlist"))
@@ -52,7 +53,7 @@ def admin_itemlist(request):
             kwargs = {}
             
             if form.cleaned_data['display_archived_only'] is True:
-                kwargs['is_active'] = False
+                kwargs['is_archived'] = True
                 
             if form.cleaned_data['display_is_valuable_only'] is True:
                 kwargs['is_valuable'] = True
@@ -75,7 +76,7 @@ def admin_itemlist(request):
     else:
         
         item_filter_form = AdminItemFilterForm()   
-        item_list = Item.objects.filter(is_active=True).order_by('-pk')
+        item_list = Item.objects.filter(is_archived=False).order_by('-pk')
     
     return render(request, 'items/admin-itemlist.html', {
         'items': item_list, 
@@ -122,7 +123,7 @@ def checkout(request, item_num):
             form = ItemReturnForm(request.POST)
         
             if form.is_valid():
-
+                messages.success(request, "Item successfully returned")
                 form.save(item_pk=item_num, performed_by=request.user)	
                 return HttpResponseRedirect(reverse("itemlist"))
     
