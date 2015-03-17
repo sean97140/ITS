@@ -25,6 +25,7 @@
         {% csrf_token %}
     <table class="table table-condensed table-striped">
         <tr><th>Select</th>
+            <th>ID #</th>
             <th>Found on</th>
             <th>Found by</th>
             <th>Location</th>
@@ -46,6 +47,7 @@
                 <tr>
             {% endif %}
             <th><a href="{% url 'view_item' item.pk %}">View</a> <a href="{% url 'admin-action' item.pk %}">Action</a></th>
+            <th>{{ item.item_id }}</th>
             <th>{{ item.found_on }}</th>
             <th>{{ item.found_by }}</th>
             <th>{{ item.location }}</th>
