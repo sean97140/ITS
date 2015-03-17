@@ -1,12 +1,3 @@
-/*
-function source(query, callback){
-    var url = "{% url 'users-autocomplete' %}";
-    $.getJSON(url, {query: query}, function (data) {
-        callback(data);
-    });
-}
-*/
-
 function initAutoComplete(selector){ 
     selector.typeahead({
         minLength: 2,
@@ -39,13 +30,6 @@ function initAutoComplete(selector){
         $("#id_email").val(datum.email);
         });
         
-        
-        // Can also use
-        //.bind('typeahead:selected', function (obj, datum) {
-        //
-        // console.log(obj);
-        // console.log(datum);
-        //});
 }
 
 function possibleOwnerCheckbox(){ 
