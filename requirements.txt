@@ -3,9 +3,9 @@ setuptools
 psycopg2
 django-cloak
 pytz
-git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils[logging]
+git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils
 ldap3
--e git://github.com/PSU-OIT-ARC/djangocas.git#egg=djangocas
+djangocas
 mock
 model-mommy
 coverage

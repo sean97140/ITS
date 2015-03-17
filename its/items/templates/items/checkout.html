@@ -3,26 +3,23 @@
 {% block content %}
 <h2>You are returning the following item:</h2>
 
-<h3>Location: {{ item.location }}</h3>
-<h3>Category: {{ item.category }}</h3>
-<h3>Found: {{ item.found_on }}</h3>
-<h3>Description: {{ item.description }}</h3>
-<h3>Valuable: {{ item.is_valuable }}</h3>
-<h3>Possible Owner: {{ item.possible_owner }}</h3>
+<table style="width:50%">
+    <tr><th><h3>ID #:</h3></th><td><h4>{{ item.item_id }}</h4></td></tr>
+    <tr><th><h3>Location:</h3></th><td><h4>{{ item.location }}</h4></td></tr>
+    <tr><th><h3>Category:</h3></th><td><h4>{{ item.category }}</h4></td></tr>
+    <tr><th><h3>Found:</h3></th><td><h4>{{ item.found_on }}</h4></td></tr>
+    <tr><th><h3>Description:</h3></th><td><h4>{{ item.description }}</h4></td></tr>
+    <tr><th><h3>Valuable:</h3></th><td><h4>{{ item.is_valuable }}</h4></td></tr>
+    <tr><th><h3>Possible Owner:</h3></th><td><h4>{{ item.possible_owner }}</h4></td></tr>
+</table>
 
 <h3>Enter the owner's name as it appears on their photo ID, as well as their email address.</h3>
 <form action="" method="post">
 {% csrf_token %}
 <table>
-<tr><th>{{ form.first_name.label_tag }}</th>
-<th>{{ form.first_name }}</th>
-<th>{{ form.first_name.errors }}</th></tr>
-<tr><th>{{ form.last_name.label_tag }}</th>
-<th>{{ form.last_name }}</th>
-<th>{{ form.last_name.errors }}</th></tr>
-<tr><th>{{ form.email.label_tag }}</th>   
-<th>{{ form.email }}</th>
-<th>{{ form.email.errors }}</th></tr>
+    <tr><th>{{ form.first_name|bootstrap }}</th></tr>
+    <tr><th>{{ form.last_name|bootstrap }}</th></tr>
+    <tr><th>{{ form.email|bootstrap }}</th></tr>
 </table>
 <br><br><input type="submit" name="action" value="Return Item">
 <input type="submit" name="action" value="Cancel">

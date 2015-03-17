@@ -30,7 +30,6 @@ class Action(models.Model):
         return self.name
 
         
-# should add a performed by field
 class Status(models.Model):
     status_id = models.AutoField(primary_key=True)
     item = models.ForeignKey('Item')
@@ -85,7 +84,6 @@ class Item(models.Model):
         db_table = "item"
 		
     def __str__(self):
-        #import pdb; pdb.set_trace()
         return self.description
 		
     # This returns the last updated status, which is the first status

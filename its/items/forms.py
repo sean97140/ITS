@@ -10,9 +10,9 @@ from django.template import Context
 from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
 
-def create_user(new_first_name, new_last_name, new_email):
 
-    #import pdb; pdb.set_trace()
+# Generates a unique user name.
+def create_user(new_first_name, new_last_name, new_email):
             
     new_username = '_' + new_first_name + new_last_name
     i = 0
@@ -28,19 +28,20 @@ def create_user(new_first_name, new_last_name, new_email):
     
     return new_user
 
+    
+# Form used on the admin-action page
 class AdminActionForm(forms.Form):
     
-    action_choice = forms.ModelChoiceField(queryset=Action.objects.all(), required=True)
+    action_choice = forms.ModelChoiceField(queryset=Action.objects.all().exclude(name="Returned"), required=True)
     note = forms.CharField(widget=forms.Textarea, required=False)
             
 
     def clean(self):
+    
         # require note field on action of OTHER
         cleaned_data = super().clean()
         action_choice = cleaned_data.get("action_choice")
         note = cleaned_data.get("note")
-        
-        #import pdb; pdb.set_trace()
         
         if str(action_choice) == 'Other' and note == '':
             self.add_error("note", "Note required when choosing action of type Other.")
@@ -50,13 +51,21 @@ class AdminActionForm(forms.Form):
    
     def save(self, *args, item_pk, current_user, **kwargs):
 
-        # save status
+        
+        action_choice = self.cleaned_data["action_choice"]
         item = Item.objects.get(pk=item_pk)
+        
+        # If they chose to change status to checked in we need to make sure to
+        # set the returned_to field to None
+        if str(action_choice) == "Checked in":
+            item.returned_to = None
+        
         new_action = Action.objects.get(name=self.cleaned_data['action_choice'])
         new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note'], performed_by=current_user).save()
+        item.save()
+
         
-    
-    
+# Form used on the checkout page
 class ItemReturnForm(forms.Form):
     
     first_name = forms.CharField(required=True)
@@ -64,7 +73,10 @@ class ItemReturnForm(forms.Form):
     email = forms.CharField(required=True)
     
     def checkout_email(self, item):
-    
+        
+        """
+        Send an email to all the admins when a valuable item is checked out
+        """
         subject = 'Valuable item checked out'
         to = settings.CHECKOUT_EMAIL_TO
         from_email = settings.CHECKOUT_EMAIL_FROM
@@ -107,12 +119,15 @@ class ItemReturnForm(forms.Form):
         
         return returned_item    
 
+        
+# Form used on itemlist and admin itemlist pages for selecting an item.
 class ItemSelectForm(forms.Form):
 
     item_num = forms.IntegerField(required=True)
     action = forms.CharField(max_length=50, required=True)
 
-    
+
+# Administrative item filter form for the admin itemlist page
 class AdminItemFilterForm(forms.Form):
     sort_choices= (
         ('pk', 'Date found'),
@@ -128,7 +143,9 @@ class AdminItemFilterForm(forms.Form):
     display_is_valuable_only = forms.BooleanField(required=False)
     display_archived_only = forms.BooleanField(required=False)
     search_keyword_or_name = forms.CharField(max_length=50, required=False)
+
     
+# Item filter form for the regular itemlist page
 class ItemFilterForm(forms.Form):
 
     sort_choices= (
@@ -144,8 +161,9 @@ class ItemFilterForm(forms.Form):
     sort_by = forms.ChoiceField(choices=sort_choices, required=False)
     display_is_valuable_only = forms.BooleanField(required=False)
     search_keyword_or_name = forms.CharField(max_length=50, required=False)
-    
 
+    
+# Form for the checkin view
 class CheckInForm(ModelForm):
     
     possible_owner_found = forms.BooleanField(required=False)
@@ -178,6 +196,10 @@ class CheckInForm(ModelForm):
 	
     def user_checkin_email(self, item, possible_owner):
         
+        """
+        Send an email to a possible owner when an item they own is checked in
+        """
+        
         subject = 'An item belonging to you was found'
         to = [possible_owner.email]
         from_email = settings.CHECKIN_EMAIL_FROM
@@ -193,7 +215,7 @@ class CheckInForm(ModelForm):
 	
     
     def clean(self):
-        #import pdb; pdb.set_trace()
+
         cleaned_data = super(CheckInForm, self).clean()
         username = cleaned_data.get("username")
         first_name = cleaned_data.get("first_name")
@@ -201,9 +223,8 @@ class CheckInForm(ModelForm):
         email = cleaned_data.get("email")
         possible_owner_found = cleaned_data.get("possible_owner_found")
 		
-        #if possible_owner_found and not username:
-        #    self.add_error("username", "username required")
-            
+        # If possilbe owner found is checked we need to make these
+        # optional fields required.
         if possible_owner_found and not first_name:
             self.add_error("first_name", "First name required")
             
@@ -217,13 +238,12 @@ class CheckInForm(ModelForm):
         
     def save(self, *args, current_user, **kwargs):
         
-        #import pdb; pdb.set_trace()
-        
         user_first_name = self.cleaned_data['first_name']
         user_last_name = self.cleaned_data['last_name']
         user_email = self.cleaned_data['email']
         
-        
+        # If an owner was found we need to record them as an owner
+        # This may require that a new user is created
         if self.cleaned_data.get("possible_owner_found") is True:
 
             try:
