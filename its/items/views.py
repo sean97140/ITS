@@ -27,7 +27,6 @@ def view_item(request, item_num):
 def admin_itemlist(request):
 
     if request.method == 'POST' and request.POST['action'] == "Archive selected items":
-        #import pdb; pdb.set_trace()
         
         choices = request.POST.getlist('choices')
         
@@ -94,12 +93,10 @@ def adminaction(request, item_num):
     
     if request.method == 'POST' and request.POST['action'] == "Perform action":
     
-        #import pdb; pdb.set_trace()
-    
         form = AdminActionForm(request.POST)
         
         if form.is_valid():
-
+            messages.success(request, "Item successfully changed")
             form.save(item_pk=item_num, current_user=request.user)	
             return HttpResponseRedirect(reverse("admin-itemlist"))
     
