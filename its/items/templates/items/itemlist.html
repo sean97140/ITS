@@ -17,6 +17,7 @@
     </div>
     <table class="table table-condensed table-striped">
         <thead><tr><th>Select</th>
+            <th>ID #</th>
             <th>Location</th>
             <th>Category</th>
             <th>Description</th>
@@ -31,6 +32,7 @@
             {% endif %}
             
             <th><a href="{% url 'checkout' item.pk %}">Return</a></th>
+            <th>{{ item.item_id }}</th>
             <th>{{ item.location }}</th>
             <th>{{ item.category }}</th>
             <th>{{ item.description }}</th>
