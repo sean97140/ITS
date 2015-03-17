@@ -12,6 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 
+
+# Allows user to view an items properties, including it's status changes.
 @staff_member_required
 def view_item(request, item_num):    
         
@@ -22,10 +24,13 @@ def view_item(request, item_num):
 
     return render(request, 'items/view_item.html', context)
 
-    
+
+# Administrative item listing, allows for viewing of items, taking actions on items,
+# and archiving items.    
 @staff_member_required
 def admin_itemlist(request):
-
+    
+    # User wants to archive items.
     if request.method == 'POST' and request.POST['action'] == "Archive selected items":
         
         choices = request.POST.getlist('choices')
@@ -37,16 +42,18 @@ def admin_itemlist(request):
         
         return HttpResponseRedirect(reverse("admin-itemlist"))
         
-        
+    # Reset the AdminItemFilter form    
     if request.method == 'GET' and request.GET.get('action') == "Reset":
         
         item_filter_form = AdminItemFilterForm()   
         item_list = Item.objects.order_by('-pk')
     
+    # Filter items
     if request.method == 'GET' and request.GET.get('action') == "Filter":
 		
         form = AdminItemFilterForm(request.GET)
         
+        # Setup the filter with the users selections
         if form.is_valid() and (form.cleaned_data['select_location'] is not None or form.cleaned_data['select_category'] is not None or form.cleaned_data['display_is_valuable_only'] is not False or form.cleaned_data['search_keyword_or_name'] is not None):
             
             kwargs = {}
@@ -82,15 +89,19 @@ def admin_itemlist(request):
         'ItemFilter': item_filter_form,
         })
 
-        
+
+# Administrative action page
+# Allows user to change status of items.         
 @staff_member_required
 def adminaction(request, item_num):
     
     chosen_item = get_object_or_404(Item, pk=item_num)
-
+    
+    # Cancel the action and return to the admin itemlist page
     if request.method == 'POST' and request.POST['action'] == "Cancel":
         return HttpResponseRedirect(reverse("admin-itemlist"))
     
+    # Perform action on item
     if request.method == 'POST' and request.POST['action'] == "Perform action":
     
         form = AdminActionForm(request.POST)
@@ -105,16 +116,20 @@ def adminaction(request, item_num):
         
     return render(request, 'items/admin-action.html', {'form': form, 'item': chosen_item})
 
-    
+
+# Return item form
+# Allows user to return the item to owner
 @login_required
 def checkout(request, item_num):
     
     
     if request.method == 'POST':
-    
+        
+        # Cancel the action
         if request.POST['action'] == 'Cancel':
             return HttpResponseRedirect(reverse("itemlist"))
         
+        # Return the item
         if request.POST['action'] == "Return Item":
     
             form = ItemReturnForm(request.POST)
@@ -129,20 +144,24 @@ def checkout(request, item_num):
         
     return render(request, 'items/checkout.html', {'form': form, 'item': chosen_item})
 
-    
+
+# Non-administrative item listing
+# Can view item list and return items    
 @login_required
 def itemlist(request):
 
-
+    # Reset the item filter
     if request.method == 'GET' and request.GET.get('action') == "Reset":
         
         item_filter_form = ItemFilterForm()   
         item_list = Item.objects.order_by('-pk')
     
+    # Filter the item listing
     if request.method == 'GET' and request.GET.get('action') == "Filter":
         
         form = ItemFilterForm(request.GET)
 		
+        # Setup the filter with the users selections
         if form.is_valid() and (form.cleaned_data['select_location'] is not None or form.cleaned_data['select_category'] is not None or form.cleaned_data['display_is_valuable_only'] is not False or form.cleaned_data['search_keyword_or_name'] is not None):
             
             kwargs = {}
@@ -177,6 +196,8 @@ def itemlist(request):
         })
 
         
+# Item check in form
+# Allows lab attendant to check an item into inventory.       
 @login_required
 def checkin(request):
 
@@ -210,7 +231,8 @@ def autocomplete(request):
         
     return JsonResponse(output, safe=False)
     
-
+# Item check in print off page
+# Page lab attends should print off when they check in an item in.
 @login_required
 def printoff(request, item_id):
     
