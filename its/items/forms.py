@@ -11,9 +11,12 @@ from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
 
 
-# Generates a unique user name.
+
 def create_user(new_first_name, new_last_name, new_email):
-            
+
+    """
+    Generates a unique user name.
+    """
     new_username = '_' + new_first_name + new_last_name
     i = 0
             
@@ -29,8 +32,12 @@ def create_user(new_first_name, new_last_name, new_email):
     return new_user
 
     
-# Form used on the admin-action page
+
 class AdminActionForm(forms.Form):
+    
+    """
+    Form used on the admin-action page
+    """
     
     action_choice = forms.ModelChoiceField(queryset=Action.objects.all().exclude(name="Returned"), required=True)
     note = forms.CharField(widget=forms.Textarea, required=False)
@@ -65,8 +72,12 @@ class AdminActionForm(forms.Form):
         item.save()
 
         
-# Form used on the checkout page
+
 class ItemReturnForm(forms.Form):
+    
+    """
+    Form used on the checkout page
+    """
     
     first_name = forms.CharField(required=True)
     last_name = forms.CharField(required=True)
@@ -120,15 +131,24 @@ class ItemReturnForm(forms.Form):
         return returned_item    
 
         
-# Form used on itemlist and admin itemlist pages for selecting an item.
+
 class ItemSelectForm(forms.Form):
 
+    """
+    Form used on itemlist and admin itemlist pages for selecting an item.
+    """
+    
     item_num = forms.IntegerField(required=True)
     action = forms.CharField(max_length=50, required=True)
 
 
-# Administrative item filter form for the admin itemlist page
+
 class AdminItemFilterForm(forms.Form):
+
+    """
+    Administrative item filter form for the admin itemlist page
+    """
+    
     sort_choices= (
         ('pk', 'Date found'),
         ('location', 'Location'),
@@ -145,8 +165,12 @@ class AdminItemFilterForm(forms.Form):
     search_keyword_or_name = forms.CharField(max_length=50, required=False)
 
     
-# Item filter form for the regular itemlist page
+
 class ItemFilterForm(forms.Form):
+
+    """
+    Item filter form for the regular itemlist page
+    """
 
     sort_choices= (
         ('pk', 'Date found'),
@@ -163,8 +187,12 @@ class ItemFilterForm(forms.Form):
     search_keyword_or_name = forms.CharField(max_length=50, required=False)
 
     
-# Form for the checkin view
+
 class CheckInForm(ModelForm):
+
+    """
+    Form for the checkin view
+    """
     
     possible_owner_found = forms.BooleanField(required=False)
     username = forms.CharField(required=False, help_text="Or enter a first/last name")
@@ -173,6 +201,7 @@ class CheckInForm(ModelForm):
     email = forms.CharField(required=False)
 	
     def checkin_email(self, item):
+    
         """
         Send an email to all the admins when a valuable item is checked in
         """
