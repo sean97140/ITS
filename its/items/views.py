@@ -13,10 +13,14 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 
 
-# Allows user to view an items properties, including it's status changes.
+
 @staff_member_required
 def view_item(request, item_num):    
-        
+
+    """
+    Allows user to view an items properties, including it's status changes.
+    """
+
     chosen_item = get_object_or_404(Item, pk=item_num)
     status_list = Status.objects.filter(item=item_num)
     context = {'item': chosen_item,
@@ -24,12 +28,15 @@ def view_item(request, item_num):
 
     return render(request, 'items/view_item.html', context)
 
-
-# Administrative item listing, allows for viewing of items, taking actions on items,
-# and archiving items.    
+   
 @staff_member_required
 def admin_itemlist(request):
-    
+ 
+    """
+    Administrative item listing, allows for viewing of items, 
+    taking actions on items, and archiving items. 
+    """
+ 
     # User wants to archive items.
     if request.method == 'POST' and request.POST['action'] == "Archive selected items":
         
@@ -89,11 +96,14 @@ def admin_itemlist(request):
         'ItemFilter': item_filter_form,
         })
 
-
-# Administrative action page
-# Allows user to change status of items.         
+       
 @staff_member_required
 def adminaction(request, item_num):
+    
+    """
+    Administrative action page
+    Allows user to change status of items.  
+    """
     
     chosen_item = get_object_or_404(Item, pk=item_num)
     
@@ -117,11 +127,13 @@ def adminaction(request, item_num):
     return render(request, 'items/admin-action.html', {'form': form, 'item': chosen_item})
 
 
-# Return item form
-# Allows user to return the item to owner
 @login_required
 def checkout(request, item_num):
     
+    """
+    Return item form
+    Allows user to return the item to owner
+    """
     
     if request.method == 'POST':
         
@@ -145,11 +157,14 @@ def checkout(request, item_num):
     return render(request, 'items/checkout.html', {'form': form, 'item': chosen_item})
 
 
-# Non-administrative item listing
-# Can view item list and return items    
 @login_required
 def itemlist(request):
-
+    
+    """
+    Non-administrative item listing
+    Can view item list and return items    
+    """
+    
     # Reset the item filter
     if request.method == 'GET' and request.GET.get('action') == "Reset":
         
@@ -195,12 +210,15 @@ def itemlist(request):
         'ItemFilter': item_filter_form,
         })
 
-        
-# Item check in form
-# Allows lab attendant to check an item into inventory.       
+
 @login_required
 def checkin(request):
-
+    
+    """        
+    Item check in form
+    Allows lab attendant to check an item into inventory.       
+    """
+    
     if request.method == 'POST':
         form = CheckInForm(request.POST)
 		
@@ -214,9 +232,14 @@ def checkin(request):
     return render(request, 'items/checkin.html', {'form': form})
 
     
-"""Does an LDAP search and returns a JSON array of objects"""
+
 @login_required
 def autocomplete(request):
+    
+    """
+    Does an LDAP search and returns a JSON array of objects
+    """
+
     q = escape(request.GET['query'])
     search = '(& (| (uid={q}*) (cn={q}*)) (psuprivate=N))'.format(q=q)
     results = ldapsearch(search)
@@ -231,10 +254,14 @@ def autocomplete(request):
         
     return JsonResponse(output, safe=False)
     
-# Item check in print off page
-# Page lab attends should print off when they check in an item in.
+
 @login_required
 def printoff(request, item_id):
+    
+    """
+    Item check in print off page
+    Page lab attends should print off when they check in an item in.
+    """
     
     if request.method == 'POST' and request.POST['action'] == "Return to item check-in":
         return HttpResponseRedirect(reverse("checkin"))
