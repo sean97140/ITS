@@ -2,7 +2,7 @@
 
 .DEFAULT_GOAL := run
 
-PROJECT_NAME = its
+PROJECT_NAME = its2
 VENV_DIR ?= .env
 export PATH:=.env/bin:$(PATH):/usr/pgsql-9.3/bin:/usr/pgsql-9.1/bin
 MANAGE = ./manage.py
@@ -13,12 +13,12 @@ NO_COLOR=\x1b[0m
 init:
 	rm -rf $(VENV_DIR)
 	@$(MAKE) $(VENV_DIR)
-	dropdb its || true
-	createdb its
+	dropdb its2 || true
+	createdb its2
 	@$(MAKE) reload
 	$(MANAGE) loaddata actions.json
-    $(MANAGE) loaddata category.json
-    @$(MANAGE) createadmin
+	$(MANAGE) loaddata category.json
+	@$(MANAGE) createadmin
 	@$(MAKE) run
 
 
@@ -33,8 +33,8 @@ reload: $(VENV_DIR)
 # build the virtualenv
 $(VENV_DIR): requirements.txt
 	@if [ -d "$(VENV_DIR)" ]; then \
-	    echo "Directory exists: $(VENV_DIR)"; \
-	    exit 1; \
+		echo "Directory exists: $(VENV_DIR)"; \
+		exit 1; \
 	fi
 	python3 -m venv $(VENV_DIR)
 	curl https://raw.githubusercontent.com/pypa/pip/master/contrib/get-pip.py | python3
