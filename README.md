@@ -1,18 +1,13 @@
-# Project Template
+# ITS Lost and Found website 
 
 ## Introduction
 
-Quick Start Template for ARC projects.
-No need to download! Just follow the instructions below.
+This project contains a website for use by ITS lab attendants and ITS staff allowing them to manage their lost and found inventory. 
+
+Lab attendants can check new items in, and return items to their owner.
+
+Staff members can perform many different actions on inventory items, such as marking them as sent to CPSO, returned, or missing. They can also archive items. The system will send the staff emails whenever a valuable item is checked in or returned by a lab attendant. 
 
 ## Installation
 
-Start a new Django project using this template
-
-    project_name="lame"
-    django-admin.py startproject --name=project_name.conf,README.md,Makefile,MANIFEST.in --extension=template,py --template=https://github.com/PSU-OIT-ARC/project_template/archive/master.zip $project_name
-
-    cd $project_name
-    make initial-setup
-
-    chmod +x ./manage.py
+Download project, go into project root and .\Makefile
