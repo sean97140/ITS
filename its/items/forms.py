@@ -9,8 +9,19 @@ from django.core.mail import send_mail
 from django.template import Context
 from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
+from arcutils.ldap import escape, ldapsearch, parse_profile
 
-
+def check_ldap(username):
+    q = username
+    search = '(& (| (uid={q}*)) (psuprivate=N))'.format(q=q)
+    results = ldapsearch(search)
+    
+    if results:
+        return True
+        
+    else:
+        return False
+    
 
 def create_user(new_first_name, new_last_name, new_email):
 
@@ -263,6 +274,10 @@ class CheckInForm(ModelForm):
         if possible_owner_found and not email:
             self.add_error("email", "Email required")
 
+        if possible_owner_found and username and not check_ldap(username):
+            self.add_error("username", "Invalid username, enter a valid username or leave blank.")
+            
+            
         return cleaned_data
         
     def save(self, *args, current_user, **kwargs):
