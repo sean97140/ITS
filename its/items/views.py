@@ -61,12 +61,15 @@ def admin_itemlist(request):
         form = AdminItemFilterForm(request.GET)
         
         # Setup the filter with the users selections
-        if form.is_valid() and (form.cleaned_data['select_location'] is not None or form.cleaned_data['select_category'] is not None or form.cleaned_data['display_is_valuable_only'] is not False or form.cleaned_data['search_keyword_or_name'] is not None):
             
+        if form.is_valid():
+		
             kwargs = {}
             
             if form.cleaned_data['display_archived_only'] is True:
                 kwargs['is_archived'] = True
+            else:
+                kwargs['is_archived'] = False
                 
             if form.cleaned_data['display_is_valuable_only'] is True:
                 kwargs['is_valuable'] = True
@@ -82,7 +85,7 @@ def admin_itemlist(request):
             
             item_list = Item.objects.filter(**kwargs)
             if form.cleaned_data['sort_by'] is not '':
-                item_list = item_list.order_by(form.cleaned_data['sort_by'])
+                item_list = item_list.order_by(form.cleaned_data['sort_by']).order_by('-pk')
 
             item_filter_form = AdminItemFilterForm(request.GET)   
         
@@ -177,7 +180,7 @@ def itemlist(request):
         form = ItemFilterForm(request.GET)
 		
         # Setup the filter with the users selections
-        if form.is_valid() and (form.cleaned_data['select_location'] is not None or form.cleaned_data['select_category'] is not None or form.cleaned_data['display_is_valuable_only'] is not False or form.cleaned_data['search_keyword_or_name'] is not None):
+        if form.is_valid():
             
             kwargs = {}
             
@@ -196,7 +199,7 @@ def itemlist(request):
             item_list = Item.objects.filter(**kwargs).select_related("last_status").filter(laststatus__machine_name="CHECKED_IN")
             
             if form.cleaned_data['sort_by'] is not '':
-                item_list = item_list.order_by(form.cleaned_data['sort_by'])
+                item_list = item_list.order_by(form.cleaned_data['sort_by']).order_by('-pk')
 
             item_filter_form = ItemFilterForm(request.GET)   
   
