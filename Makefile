@@ -2,7 +2,7 @@
 
 .DEFAULT_GOAL := run
 
-PROJECT_NAME = its2
+PROJECT_NAME = its
 VENV_DIR ?= .env
 export PATH:=.env/bin:$(PATH):/usr/pgsql-9.3/bin:/usr/pgsql-9.1/bin
 MANAGE = ./manage.py
@@ -14,10 +14,11 @@ init:
 	rm -rf $(VENV_DIR)
 	@$(MAKE) $(VENV_DIR)
 	dropdb its2 || true
-	createdb its2
+	createdb its
 	@$(MAKE) reload
 	$(MANAGE) loaddata actions.json
 	$(MANAGE) loaddata category.json
+	$(MANAGE) loaddata locations.json
 	@$(MANAGE) createadmin
 	@$(MAKE) run
 
