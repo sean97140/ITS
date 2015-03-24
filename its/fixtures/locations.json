@@ -1,0 +1,51 @@
+[
+{
+    "fields": {
+        "name": "ML 115"
+    },
+    "model": "items.location",
+    "pk": 1
+},
+{
+    "fields": {
+        "name": "IDSC"
+    },
+    "model": "items.location",
+    "pk": 2
+},
+{
+    "fields": {
+        "name": "ICC"
+    },
+    "model": "items.location",
+    "pk": 3
+},
+{
+    "fields": {
+        "name": "NH461"
+    },
+    "model": "items.location",
+    "pk": 4
+},
+{
+    "fields": {
+        "name": "SINQ"
+    },
+    "model": "items.location",
+    "pk": 5
+},
+{
+    "fields": {
+        "name": "FRINQ"
+    },
+    "model": "items.location",
+    "pk": 6
+},
+{
+    "fields": {
+        "name": "CH1"
+    },
+    "model": "items.location",
+    "pk": 7
+}
+]
