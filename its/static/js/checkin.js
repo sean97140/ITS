@@ -47,13 +47,9 @@ function possibleOwnerCheckbox(){
 
 
 $(function(){
-   
-    // Sets the possibleOwnerFound class fields as shown or hidden on page load
-    possibleOwnerCheckbox();
-
     // Shows/Hides possibleOwnerFound class fields when the possible owner found checkbox
     // is clicked on.
-    $("#id_possible_owner_found").click(function(){possibleOwnerCheckbox()});
+    $("#id_possible_owner_found").click(possibleOwnerCheckbox);
 
    
    

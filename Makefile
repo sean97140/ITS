@@ -13,8 +13,8 @@ NO_COLOR=\x1b[0m
 init:
 	rm -rf $(VENV_DIR)
 	@$(MAKE) $(VENV_DIR)
-	dropdb its2 || true
-	createdb its
+	dropdb --if-exists $(PROJECT_NAME)
+	createdb $(PROJECT_NAME)
 	@$(MAKE) reload
 	$(MANAGE) loaddata actions.json
 	$(MANAGE) loaddata category.json

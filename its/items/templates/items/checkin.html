@@ -29,7 +29,7 @@
     {{ form.is_valuable|bootstrap }}
     {{ form.possible_owner_found|bootstrap }}
 
-    <div class="PossibleOwner">
+    <div class="PossibleOwner" style="{% if not form.possible_owner_found.data %}display:none{% endif %}">
         {{ form.username|bootstrap }}
         {{ form.first_name|bootstrap }}
         {{ form.last_name|bootstrap }}
