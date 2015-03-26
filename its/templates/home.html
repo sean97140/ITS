@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 {% load arc %}
 {% block content %}
-<form method="post">
-    {% csrf_token %}
-    {{ form|bootstrap }}
-    <input type="submit" name="submit" value="submit" />
-</form>
+	This is the ITS Lost and Found website, it allows lab attendants and staff to manage the lost and found inventory.<br><br>
+	Click on an option in the navigation bar to proceed.
 {% endblock %}

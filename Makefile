@@ -18,6 +18,7 @@ init:
 	@$(MAKE) reload
 	$(MANAGE) loaddata actions.json
 	$(MANAGE) loaddata category.json
+	$(MANAGE) loaddata locations.json
 	@$(MANAGE) createadmin
 	@$(MAKE) run
 

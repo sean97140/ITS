@@ -46,22 +46,22 @@
             {% else %}
                 <tr>
             {% endif %}
-            <th><a href="{% url 'view_item' item.pk %}">View</a> <a href="{% url 'admin-action' item.pk %}">Action</a></th>
-            <th>{{ item.item_id }}</th>
-            <th>{{ item.found_on }}</th>
-            <th>{{ item.found_by }}</th>
-            <th>{{ item.location }}</th>
-            <th>{{ item.category }}</th>
-            <th>{{ item.description }}</th>
-            <th>{{ item.is_valuable }}</th>
-            <th>{{ item.possible_owner }}</th>
-            <th>{{ item.possible_owner_contacted }}</th>
-            <th>{{ item.returned_to }}</th>
-            <th>{{ item.last_status.action_taken }}</th>
-            <th>{{ item.last_status.timestamp }}</th>
-            <th>{{ item.last_status.note }}</th>
-            <th>{{ item.last_status.performed_by }}</th>
-            <th><input type="checkbox" name="choices" value="{{ item.pk }}" class="checkbox_archive"></th></tr>
+            <td><a href="{% url 'view_item' item.pk %}">View</a> <a href="{% url 'admin-action' item.pk %}">Action</a></td>
+            <td>{{ item.item_id }}</td>
+            <td>{{ item.found_on }}</td>
+            <td>{{ item.found_by }}</td>
+            <td>{{ item.location }}</td>
+            <td>{{ item.category }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.is_valuable }}</td>
+            <td>{{ item.possible_owner }}</td>
+            <td>{{ item.possible_owner_contacted }}</td>
+            <td>{{ item.returned_to }}</td>
+            <td>{{ item.last_status.action_taken }}</td>
+            <td>{{ item.last_status.timestamp }}</td>
+            <td>{{ item.last_status.note }}</td>
+            <td>{{ item.last_status.performed_by }}</td>
+            <td><input type="checkbox" name="choices" value="{{ item.pk }}" class="checkbox_archive"></td></tr>
         {% endfor %}
      </table>
      <input type="submit" name="action" value="Archive selected items" />

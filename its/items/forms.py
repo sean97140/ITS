@@ -1,4 +1,3 @@
-
 from django.db import models
 from django import forms
 from django.conf import settings
@@ -9,8 +8,20 @@ from django.core.mail import send_mail
 from django.template import Context
 from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
+from arcutils.ldap import escape, ldapsearch, parse_profile
 
+def check_ldap(username):
 
+    q = escape(username)
+    search = '(& (| (uid={q}*)) (psuprivate=N))'.format(q=q)
+    results = ldapsearch(search)
+    
+    if results:
+        return True
+        
+    else:
+        return False
+    
 
 def create_user(new_first_name, new_last_name, new_email):
 
@@ -81,7 +92,7 @@ class ItemReturnForm(forms.Form):
     
     first_name = forms.CharField(required=True)
     last_name = forms.CharField(required=True)
-    email = forms.CharField(required=True)
+    email = forms.EmailField(required=True)
     
     def checkout_email(self, item):
         
@@ -129,41 +140,6 @@ class ItemReturnForm(forms.Form):
             self.checkout_email(returned_item)
         
         return returned_item    
-
-        
-
-class ItemSelectForm(forms.Form):
-
-    """
-    Form used on itemlist and admin itemlist pages for selecting an item.
-    """
-    
-    item_num = forms.IntegerField(required=True)
-    action = forms.CharField(max_length=50, required=True)
-
-
-
-class AdminItemFilterForm(forms.Form):
-
-    """
-    Administrative item filter form for the admin itemlist page
-    """
-    
-    sort_choices= (
-        ('pk', 'Date found'),
-        ('location', 'Location'),
-        ('category', 'Category'),
-        ('description', 'Description'),
-        ('possible_owner', 'Possible owner'),
-    )
-
-    select_location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
-    select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
-    sort_by = forms.ChoiceField(choices=sort_choices, required=False)
-    display_is_valuable_only = forms.BooleanField(required=False)
-    display_archived_only = forms.BooleanField(required=False)
-    search_keyword_or_name = forms.CharField(max_length=50, required=False)
-
     
 
 class ItemFilterForm(forms.Form):
@@ -187,6 +163,14 @@ class ItemFilterForm(forms.Form):
     search_keyword_or_name = forms.CharField(max_length=50, required=False)
 
     
+class AdminItemFilterForm(ItemFilterForm):
+
+    """
+    Administrative item filter form for the admin itemlist page
+    """
+ 
+    display_archived_only = forms.BooleanField(required=False)
+    
 
 class CheckInForm(ModelForm):
 
@@ -198,7 +182,7 @@ class CheckInForm(ModelForm):
     username = forms.CharField(required=False, help_text="Or enter a first/last name")
     first_name = forms.CharField(required=False)
     last_name = forms.CharField(required=False)
-    email = forms.CharField(required=False)
+    email = forms.EmailField(required=False)
 	
     def checkin_email(self, item):
     
@@ -263,6 +247,10 @@ class CheckInForm(ModelForm):
         if possible_owner_found and not email:
             self.add_error("email", "Email required")
 
+        if possible_owner_found and username and not check_ldap(username):
+            self.add_error("username", "Invalid username, enter a valid username or leave blank.")
+            
+            
         return cleaned_data
         
     def save(self, *args, current_user, **kwargs):
