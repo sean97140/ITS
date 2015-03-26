@@ -3,7 +3,7 @@ from django.template import RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from its.items.models import Item, Location, Category, Status, Action
 from its.users.models import User
-from its.items.forms import CheckInForm, ItemFilterForm, AdminItemFilterForm, ItemSelectForm, ItemReturnForm, AdminActionForm
+from its.items.forms import CheckInForm, ItemFilterForm, AdminItemFilterForm, ItemReturnForm, AdminActionForm
 from django.forms.models import model_to_dict
 from django.core.urlresolvers import reverse
 from arcutils.ldap import escape, ldapsearch, parse_profile
