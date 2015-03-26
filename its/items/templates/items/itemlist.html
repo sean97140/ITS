@@ -31,14 +31,14 @@
                 <tr>
             {% endif %}
             
-            <th><a href="{% url 'checkout' item.pk %}">Return</a></th>
-            <th>{{ item.item_id }}</th>
-            <th>{{ item.location }}</th>
-            <th>{{ item.category }}</th>
-            <th>{{ item.description }}</th>
-            <th>{{ item.possible_owner }}</th>
-            <th>{{ item.possible_owner_contacted }}</th>
-            <th>{{ item.last_status.action_taken }}</th></tr>
+            <td><a href="{% url 'checkout' item.pk %}">Return</a></td>
+            <td>{{ item.item_id }}</td>
+            <td>{{ item.location }}</td>
+            <td>{{ item.category }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.possible_owner }}</td>
+            <td>{{ item.possible_owner_contacted }}</td>
+            <td>{{ item.last_status.action_taken }}</td></tr>
         {% endfor %}
      </table>
 {% endblock %}
