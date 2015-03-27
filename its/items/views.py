@@ -3,7 +3,7 @@ from django.template import RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from its.items.models import Item, Location, Category, Status, Action
 from its.users.models import User
-from its.items.forms import CheckInForm, ItemFilterForm, AdminItemFilterForm, ItemReturnForm, AdminActionForm
+from its.items.forms import CheckInForm, ItemFilterForm, ItemArchiveForm, AdminItemFilterForm, ItemReturnForm, AdminActionForm
 from django.forms.models import model_to_dict
 from django.core.urlresolvers import reverse
 from arcutils.ldap import escape, ldapsearch, parse_profile
@@ -40,6 +40,7 @@ def admin_itemlist(request):
     # User wants to archive items.
     if request.method == 'POST' and request.POST['action'] == "Archive selected items":
         
+        # Setup new save function here.
         choices = request.POST.getlist('choices')
         
         for choice in choices:
@@ -52,8 +53,9 @@ def admin_itemlist(request):
     # Reset the AdminItemFilter form    
     if request.method == 'GET' and request.GET.get('action') == "Reset":
         
-        item_filter_form = AdminItemFilterForm()   
         item_list = Item.objects.order_by('-pk')
+        item_filter_form = AdminItemFilterForm()
+        item_archive_form = ItemArchiveForm(item_list=item_list)
     
     # Filter items
     if request.method == 'GET' and request.GET.get('action') == "Filter":
@@ -84,19 +86,22 @@ def admin_itemlist(request):
                 kwargs['description'] = form.cleaned_data['search_keyword_or_name']
             
             item_list = Item.objects.filter(**kwargs)
+            
             if form.cleaned_data['sort_by'] is not '':
                 item_list = item_list.order_by(form.cleaned_data['sort_by']).order_by('-pk')
 
-            item_filter_form = AdminItemFilterForm(request.GET)   
+            item_filter_form = AdminItemFilterForm(request.GET)
+            item_archive_form = ItemArchiveForm(item_list=item_list)
         
     else:
-        
-        item_filter_form = AdminItemFilterForm()   
         item_list = Item.objects.filter(is_archived=False).order_by('-pk')
+        item_filter_form = AdminItemFilterForm()
+        item_archive_form = ItemArchiveForm(item_list=item_list)
     
     return render(request, 'items/admin-itemlist.html', {
         'items': item_list, 
         'ItemFilter': item_filter_form,
+        'ItemArchive': item_archive_form,
         })
 
        
