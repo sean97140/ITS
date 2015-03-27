@@ -40,7 +40,7 @@
             <th>Last action notes</th>
             <th>Last action taken by</th>
             <th>Archive<input type="checkbox" name="select_all" value="" id="select_all"></th></tr>
-        {% for item in items %}
+        {% for item, field in form %}
             {% if item.is_valuable %}
                 <tr class="danger">
             {% else %}
@@ -61,6 +61,7 @@
             <td>{{ item.last_status.timestamp }}</td>
             <td>{{ item.last_status.note }}</td>
             <td>{{ item.last_status.performed_by }}</td>
+            <td>{{ field }}</td>
             <td><input type="checkbox" name="choices" value="{{ item.pk }}" class="checkbox_archive"></td></tr>
         {% endfor %}
      </table>
