@@ -37,19 +37,6 @@ def admin_itemlist(request):
     taking actions on items, and archiving items. 
     """
  
-    # User wants to archive items.
-    if request.method == 'POST' and request.POST['action'] == "Archive selected items":
-        
-        # Setup new save function here.
-        choices = request.POST.getlist('choices')
-        
-        for choice in choices:
-            item = Item.objects.get(pk=choice)
-            item.is_archived = True
-            item.save()
-        
-        return HttpResponseRedirect(reverse("admin-itemlist"))
-        
     # Reset the AdminItemFilter form    
     if request.method == 'GET' and request.GET.get('action') == "Reset":
         
@@ -57,8 +44,8 @@ def admin_itemlist(request):
         item_filter_form = AdminItemFilterForm()
         item_archive_form = ItemArchiveForm(item_list=item_list)
     
-    # Filter items
-    if request.method == 'GET' and request.GET.get('action') == "Filter":
+    # Filter items/archive items.
+    if request.GET: 
 		
         form = AdminItemFilterForm(request.GET)
         
@@ -98,10 +85,22 @@ def admin_itemlist(request):
         item_filter_form = AdminItemFilterForm()
         item_archive_form = ItemArchiveForm(item_list=item_list)
     
+    if request.method == 'POST':
+        
+        item_archive_form = ItemArchiveForm(request.POST, item_list=item_list)
+        
+        if item_archive_form.is_valid():
+            item_archive_form.save()
+            messages.success(request, "Item successfully changed")
+            return HttpResponseRedirect(request.get_full_path())
+    
+    else:
+        item_archive_form = ItemArchiveForm(item_list=item_list)
+        
     return render(request, 'items/admin-itemlist.html', {
         'items': item_list, 
-        'ItemFilter': item_filter_form,
-        'ItemArchive': item_archive_form,
+        'item_filter': item_filter_form,
+        'archive_form': item_archive_form,
         })
 
        
@@ -115,12 +114,8 @@ def adminaction(request, item_num):
     
     chosen_item = get_object_or_404(Item, pk=item_num)
     
-    # Cancel the action and return to the admin itemlist page
-    if request.method == 'POST' and request.POST['action'] == "Cancel":
-        return HttpResponseRedirect(reverse("admin-itemlist"))
-    
     # Perform action on item
-    if request.method == 'POST' and request.POST['action'] == "Perform action":
+    if request.method == 'POST':
     
         form = AdminActionForm(request.POST)
         
@@ -144,20 +139,13 @@ def checkout(request, item_num):
     """
     
     if request.method == 'POST':
-        
-        # Cancel the action
-        if request.POST['action'] == 'Cancel':
-            return HttpResponseRedirect(reverse("itemlist"))
-        
-        # Return the item
-        if request.POST['action'] == "Return Item":
     
-            form = ItemReturnForm(request.POST)
+        form = ItemReturnForm(request.POST)
         
-            if form.is_valid():
-                messages.success(request, "Item successfully returned")
-                form.save(item_pk=item_num, performed_by=request.user)	
-                return HttpResponseRedirect(reverse("itemlist"))
+        if form.is_valid():
+            messages.success(request, "Item successfully returned")
+            form.save(item_pk=item_num, performed_by=request.user)	
+            return HttpResponseRedirect(reverse("itemlist"))
     
     chosen_item = get_object_or_404(Item, pk=item_num)
     form = ItemReturnForm()
