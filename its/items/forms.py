@@ -176,6 +176,7 @@ class AdminItemFilterForm(ItemFilterForm):
 class ItemArchiveForm(forms.Form):
 
     def __init__(self, *args, item_list, **kwargs):
+
         super(ItemArchiveForm, self).__init__(*args, **kwargs)
 
         self.item_list = item_list
@@ -183,14 +184,24 @@ class ItemArchiveForm(forms.Form):
             self.fields['archive-%d' % item.pk] = forms.BooleanField(initial=item.is_archived, required=False)
 
     def __iter__(self):
+    
         for item in self.item_list:
             yield item, self['archive-%d' % item.pk]
 
     def save(self):
+    
+        changed = False 
+        
         for item in self.item_list:
             is_archived = self.cleaned_data.get("archive-%d" % item.pk)
-            item.is_archived = is_archived
-            item.save()
+            
+            if item.is_archived is not is_archived: 
+                item.is_archived = is_archived
+                item.save()
+                changed = True
+                
+        return changed
+                
 
                     
 class CheckInForm(ModelForm):
