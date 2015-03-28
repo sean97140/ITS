@@ -11,10 +11,10 @@ from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
+from .perms import permissions
 
 
-
-@staff_member_required
+@permissions.can_view_item
 def view_item(request, item_num):    
 
     """
