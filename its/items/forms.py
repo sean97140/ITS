@@ -10,6 +10,7 @@ from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
 from arcutils.ldap import escape, ldapsearch, parse_profile
 
+
 def check_ldap(username):
 
     q = escape(username)
@@ -170,8 +171,39 @@ class AdminItemFilterForm(ItemFilterForm):
     """
  
     display_archived_only = forms.BooleanField(required=False)
+         
     
+class ItemArchiveForm(forms.Form):
 
+    def __init__(self, *args, item_list, **kwargs):
+
+        super(ItemArchiveForm, self).__init__(*args, **kwargs)
+
+        self.item_list = item_list
+        for item in item_list:
+            self.fields['archive-%d' % item.pk] = forms.BooleanField(initial=item.is_archived, required=False)
+
+    def __iter__(self):
+    
+        for item in self.item_list:
+            yield item, self['archive-%d' % item.pk]
+
+    def save(self):
+    
+        changed = False 
+        
+        for item in self.item_list:
+            is_archived = self.cleaned_data.get("archive-%d" % item.pk)
+            
+            if item.is_archived is not is_archived: 
+                item.is_archived = is_archived
+                item.save()
+                changed = True
+                
+        return changed
+                
+
+                    
 class CheckInForm(ModelForm):
 
     """

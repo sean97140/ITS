@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 
+    {% block head %}
+        <script>
+            function goBack() {
+                window.history.back();
+            }
+        </script>
+    {% endblock %}
+
+
 {% block content %}
 <h2>You are returning the following item:</h2>
 
@@ -22,6 +31,6 @@
     <tr><th>{{ form.email|bootstrap }}</th></tr>
 </table>
 <br><br><input type="submit" name="action" value="Return Item">
-<input type="submit" name="action" value="Cancel">
+<button onclick="goBack()">Cancel</button>
 </form>
 {% endblock %}

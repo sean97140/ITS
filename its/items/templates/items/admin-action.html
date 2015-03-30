@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+    {% block head %}
+        <script>
+            function goBack() {
+                window.history.back();
+            }
+        </script>
+    {% endblock %}
+
 {% block content %}
 <h2>You are performing a management action on the following item:</h2>
 
@@ -12,6 +20,7 @@
     <tr><th><h3>Valuable:</h3></th><td><h4>{{ item.is_valuable }}</h4></td></tr>
     <tr><th><h3>Possible Owner:</h3></th><td><h4>{{ item.possible_owner }}</h4></td></tr>
     <tr><th><h3>Returned to:</h3></th><td><h4>{{ item.returned_to }}</h4></td></tr>
+    <tr><th><h3>Status:</h3></th><td><h4>{{ item.last_status.action_taken }}</h4></td></tr>
 </table>
 
 <form action="" method="post">
@@ -21,6 +30,6 @@
 <tr><th>{{ form.note|bootstrap  }} </th></tr>
 </table> 
 <br><br><input type="submit" name="action" value="Perform action">
-<input type="submit" name="action" value="Cancel">
+<button onclick="goBack()">Cancel</button>
 </form>
 {% endblock %}
