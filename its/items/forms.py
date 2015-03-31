@@ -149,20 +149,57 @@ class ItemFilterForm(forms.Form):
     Item filter form for the regular itemlist page
     """
 
-    sort_choices= (
+    sort_choices = (
         ('pk', 'Date found'),
         ('location', 'Location'),
         ('category', 'Category'),
         ('description', 'Description'),
         ('possible_owner', 'Possible owner'),
     )
+    
+    item_choices = (
+        ('active', 'Active'),
+        ('archived', 'Archived only'),
+        ('valuable', 'Valuable only'),
+    )
 
     select_location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
     select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
     sort_by = forms.ChoiceField(choices=sort_choices, required=False)
-    display_is_valuable_only = forms.BooleanField(required=False)
+    select_items = forms.ChoiceField(choices=item_choices, required=False, initial={'active'})
     search_keyword_or_name = forms.CharField(max_length=50, required=False)
 
+    def filter(self):
+    
+        # Setup the filter with the users selections
+        if self.is_valid():
+            
+            kwargs = {}
+            
+            if self.cleaned_data['select_items'] == 'valuable':
+                kwargs['is_valuable'] = True
+                
+            elif self.cleaned_data['select_items'] == "archived":
+                kwargs['is_archived'] = True
+            
+            if self.cleaned_data['select_location'] is not None:
+                kwargs['location'] = Location.objects.get(name=self.cleaned_data['select_location']).pk
+                
+            if self.cleaned_data['select_category'] is not None:
+                kwargs['category'] = Category.objects.get(name=self.cleaned_data['select_category']).pk
+            
+            if self.cleaned_data['search_keyword_or_name'] is not '':
+                kwargs['description'] = self.cleaned_data['search_keyword_or_name']
+            
+            item_list = Item.objects.filter(**kwargs).select_related("last_status").filter(laststatus__machine_name="CHECKED_IN").order_by('-pk')
+            
+            #import pdb; pdb.set_trace()
+            
+            if self.cleaned_data['sort_by'] is not None:
+                item_list = item_list.order_by(self.cleaned_data['sort_by'])
+
+            return item_list
+    
     
 class AdminItemFilterForm(ItemFilterForm):
 
@@ -181,7 +218,7 @@ class ItemArchiveForm(forms.Form):
 
         self.item_list = item_list
         for item in item_list:
-            self.fields['archive-%d' % item.pk] = forms.BooleanField(initial=item.is_archived, required=False)
+            self.fields['archive-%d' % item.pk] = forms.BooleanField(widget=forms.CheckboxInput(attrs={'class':'checkbox_archive'}), initial=item.is_archived, required=False)
 
     def __iter__(self):
     
