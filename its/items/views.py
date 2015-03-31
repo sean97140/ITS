@@ -11,22 +11,6 @@ from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
-from .perms import permissions
-
-
-@permissions.can_view_item
-def view_item(request, item_num):    
-
-    """
-    Allows user to view an items properties, including it's status changes.
-    """
-
-    chosen_item = get_object_or_404(Item, pk=item_num)
-    status_list = Status.objects.filter(item=item_num)
-    context = {'item': chosen_item,
-               'status_list': status_list}
-
-    return render(request, 'items/view_item.html', context)
 
    
 @staff_member_required
@@ -78,12 +62,10 @@ def admin_itemlist(request):
                 item_list = item_list.order_by(form.cleaned_data['sort_by']).order_by('-pk')
 
             item_filter_form = AdminItemFilterForm(request.GET)
-            item_archive_form = ItemArchiveForm(item_list=item_list)
         
     else:
         item_list = Item.objects.filter(is_archived=False).order_by('-pk')
         item_filter_form = AdminItemFilterForm()
-        item_archive_form = ItemArchiveForm(item_list=item_list)
     
     if request.method == 'POST':
         
@@ -113,6 +95,7 @@ def adminaction(request, item_num):
     """
     
     chosen_item = get_object_or_404(Item, pk=item_num)
+    status_list = Status.objects.filter(item=item_num)
     
     # Perform action on item
     if request.method == 'POST':
@@ -126,8 +109,12 @@ def adminaction(request, item_num):
     
     else:
         form = AdminActionForm()
-        
-    return render(request, 'items/admin-action.html', {'form': form, 'item': chosen_item})
+    
+    context = {'item': chosen_item,
+               'form': form,
+               'status_list': status_list}
+
+    return render(request, 'items/admin-action.html', context)
 
 
 @login_required
@@ -164,42 +151,11 @@ def itemlist(request):
     # Reset the item filter
     if request.method == 'GET' and request.GET.get('action') == "Reset":
         
-        item_filter_form = ItemFilterForm()   
-        item_list = Item.objects.order_by('-pk')
+            return HttpResponseRedirect(reverse("itemlist"))
     
-    # Filter the item listing
-    if request.method == 'GET' and request.GET.get('action') == "Filter":
-        
-        form = ItemFilterForm(request.GET)
-		
-        # Setup the filter with the users selections
-        if form.is_valid():
-            
-            kwargs = {}
-            
-            if form.cleaned_data['display_is_valuable_only'] is True:
-                kwargs['is_valuable'] = True
-            
-            if form.cleaned_data['select_location'] is not None:
-                kwargs['location'] = Location.objects.get(name=form.cleaned_data['select_location']).pk
-                
-            if form.cleaned_data['select_category'] is not None:
-                kwargs['category'] = Category.objects.get(name=form.cleaned_data['select_category']).pk
-            
-            if form.cleaned_data['search_keyword_or_name'] is not '':
-                kwargs['description'] = form.cleaned_data['search_keyword_or_name']
-            
-            item_list = Item.objects.filter(**kwargs).select_related("last_status").filter(laststatus__machine_name="CHECKED_IN")
-            
-            if form.cleaned_data['sort_by'] is not '':
-                item_list = item_list.order_by(form.cleaned_data['sort_by']).order_by('-pk')
-
-            item_filter_form = ItemFilterForm(request.GET)   
-  
-    else:
-        
-        item_filter_form = ItemFilterForm()   
-        item_list = Item.objects.filter().select_related("last_status").filter(laststatus__machine_name="CHECKED_IN").order_by('-pk')
+    # Any other initial request or filter
+    item_filter_form = ItemFilterForm(request.GET)
+    item_list = ItemFilterForm(request.GET).filter()
 
     return render(request, 'items/itemlist.html', {
         'items': item_list,
