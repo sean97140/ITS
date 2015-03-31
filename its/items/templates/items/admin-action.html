@@ -11,17 +11,22 @@
 {% block content %}
 <h2>You are performing a management action on the following item:</h2>
 
-<table style="width:50%">
-    <tr><th><h3>ID #:</h3></th><td><h4>{{ item.item_id }}</h4></td></tr>
-    <tr><th><h3>Location:</h3></th><td><h4>{{ item.location }}</h4></td></tr>
-    <tr><th><h3>Category:</h3></th><td><h4>{{ item.category }}</h4></td></tr>
-    <tr><th><h3>Found:</h3></th><td><h4>{{ item.found_on }}</h4></td></tr>
-    <tr><th><h3>Description:</h3></th><td><h4>{{ item.description }}</h4></td></tr>
-    <tr><th><h3>Valuable:</h3></th><td><h4>{{ item.is_valuable }}</h4></td></tr>
-    <tr><th><h3>Possible Owner:</h3></th><td><h4>{{ item.possible_owner }}</h4></td></tr>
-    <tr><th><h3>Returned to:</h3></th><td><h4>{{ item.returned_to }}</h4></td></tr>
-    <tr><th><h3>Status:</h3></th><td><h4>{{ item.last_status.action_taken }}</h4></td></tr>
+{% include "items/item_table.html" %}
+
+<h3>Status log</h3>
+<table class="table table-condensed table-striped">
+    <tr><th>Action</th>
+        <th>Timestamp</th>
+        <th>Performed by</th>
+        <th>Notes</th></tr>
+        {% for status in status_list %}
+            <td>{{ status.action_taken }}</td>
+            <td>{{ status.timestamp }}</td>
+            <td>{{ status.performed_by }}</td>
+            <td>{{ status.note }}</td></tr>
+        {% endfor %}
 </table>
+
 
 <form action="" method="post">
 {% csrf_token %}
