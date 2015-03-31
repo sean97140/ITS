@@ -6,10 +6,10 @@
     <div class="form-inline" role="form">
         <form action="" method="get">
             {% csrf_token %}
+            {{ ItemFilter.select_items|bootstrap }}
             {{ ItemFilter.select_category|bootstrap }}
             {{ ItemFilter.select_location|bootstrap }}
             {{ ItemFilter.sort_by|bootstrap }}
-            {{ ItemFilter.display_is_valuable_only|bootstrap }}
             {{ ItemFilter.search_keyword_or_name|bootstrap }}
             <input type="submit" name="action" value="Filter" />
             <input type="submit" name="action" value="Reset" />
