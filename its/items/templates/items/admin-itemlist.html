@@ -46,7 +46,7 @@
             {% else %}
                 <tr>
             {% endif %}
-            <td><a href="{% url 'view_item' item.pk %}">View</a> <a href="{% url 'admin-action' item.pk %}">Action</a></td>
+            <td><a href="{% url 'admin-action' item.pk %}">Action</a></td>
             <td>{{ item.item_id }}</td>
             <td>{{ item.found_on }}</td>
             <td>{{ item.found_by }}</td>
