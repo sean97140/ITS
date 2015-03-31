@@ -7,13 +7,8 @@
 <h1>Valuable Item</h1>
 {% endif %} 
 
-<h2>Found on: {{ item.found_on }}</h2>
-<h3>Found in: {{ item.location.name }}</h3>
-<h3>ID #: {{ item.item_id }}</h3>
-<h3>Category: {{item.category.name }}</h3>
-<h3>Description: {{ item.description }}</h3>
-<h3>Possible owner's name: {{ item.possible_owner.first_name }} {{ item.possible_owner.last_name }}</h3>
-<h3>Found by: {{ item.found_by }}</h3>
+{% include "items/item_table.html" %}
+
 
 <br>
 <a class="hidden-print" href="{% url 'checkin' %}">Return to item check-in</a>
