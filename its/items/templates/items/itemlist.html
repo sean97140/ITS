@@ -6,18 +6,18 @@
     <div class="form-inline" role="form">
         <form action="" method="get">
             {% csrf_token %}
-            {{ ItemFilter.select_items|bootstrap }}
-            {{ ItemFilter.select_category|bootstrap }}
-            {{ ItemFilter.select_location|bootstrap }}
-            {{ ItemFilter.sort_by|bootstrap }}
-            {{ ItemFilter.search_keyword_or_name|bootstrap }}
-            <input type="submit" name="action" value="Filter" />
-            <input type="submit" name="action" value="Reset" />
+            {{ item_filter.select_items|bootstrap }}
+            {{ item_filter.select_category|bootstrap }}
+            {{ item_filter.select_location|bootstrap }}
+            {{ item_filter.sort_by|bootstrap }}
+            {{ item_filter.search_keyword_or_name|bootstrap }}
+            <input type="submit" class="btn btn-default" name="action" value="Filter" />
+            <a href="/items/itemlist" class="btn btn-default" role="button">Reset</a>
         </form>
     </div>
     <table class="table table-condensed table-striped">
         <thead><tr><th>Select</th>
-            <th>ID #</th>
+            <th>ID</th>
             <th>Location</th>
             <th>Category</th>
             <th>Description</th>
