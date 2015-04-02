@@ -20,53 +20,13 @@ def admin_itemlist(request):
     Administrative item listing, allows for viewing of items, 
     taking actions on items, and archiving items. 
     """
- 
-    # Reset the AdminItemFilter form    
-    if request.method == 'GET' and request.GET.get('action') == "Reset":
-        
-        item_list = Item.objects.order_by('-pk')
-        item_filter_form = AdminItemFilterForm()
-        item_archive_form = ItemArchiveForm(item_list=item_list)
-    
-    # Filter items/archive items.
-    if request.GET: 
-		
-        form = AdminItemFilterForm(request.GET)
-        
-        # Setup the filter with the users selections
-            
-        if form.is_valid():
-		
-            kwargs = {}
-            
-            if form.cleaned_data['display_archived_only'] is True:
-                kwargs['is_archived'] = True
-            else:
-                kwargs['is_archived'] = False
-                
-            if form.cleaned_data['display_is_valuable_only'] is True:
-                kwargs['is_valuable'] = True
-            
-            if form.cleaned_data['select_location'] is not None:
-                kwargs['location'] = Location.objects.get(name=form.cleaned_data['select_location']).pk
-                
-            if form.cleaned_data['select_category'] is not None:
-                kwargs['category'] = Category.objects.get(name=form.cleaned_data['select_category']).pk
-            
-            if form.cleaned_data['search_keyword_or_name'] is not '':
-                kwargs['description'] = form.cleaned_data['search_keyword_or_name']
-            
-            item_list = Item.objects.filter(**kwargs)
-            
-            if form.cleaned_data['sort_by'] is not '':
-                item_list = item_list.order_by(form.cleaned_data['sort_by']).order_by('-pk')
+     
+    # Built item list from filter.
+    item_filter_form = AdminItemFilterForm(request.GET)
+    item_list = AdminItemFilterForm(request.GET).filter()
 
-            item_filter_form = AdminItemFilterForm(request.GET)
         
-    else:
-        item_list = Item.objects.filter(is_archived=False).order_by('-pk')
-        item_filter_form = AdminItemFilterForm()
-    
+    # Process archive request
     if request.method == 'POST':
         
         item_archive_form = ItemArchiveForm(request.POST, item_list=item_list)
@@ -147,19 +107,14 @@ def itemlist(request):
     Non-administrative item listing
     Can view item list and return items    
     """
-    
-    # Reset the item filter
-    if request.method == 'GET' and request.GET.get('action') == "Reset":
         
-            return HttpResponseRedirect(reverse("itemlist"))
-    
-    # Any other initial request or filter
+    # Create and filter item list
     item_filter_form = ItemFilterForm(request.GET)
     item_list = ItemFilterForm(request.GET).filter()
 
     return render(request, 'items/itemlist.html', {
         'items': item_list,
-        'ItemFilter': item_filter_form,
+        'item_filter': item_filter_form,
         })
 
 
