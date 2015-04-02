@@ -150,7 +150,8 @@ class ItemFilterForm(forms.Form):
     """
 
     sort_choices = (
-        ('pk', 'Date found'),
+        ('-pk', 'Found most recently'),
+        ('pk', 'Found least recently'),
         ('location', 'Location'),
         ('category', 'Category'),
         ('description', 'Description'),
@@ -159,7 +160,6 @@ class ItemFilterForm(forms.Form):
     
     item_choices = (
         ('active', 'Active'),
-        ('archived', 'Archived only'),
         ('valuable', 'Valuable only'),
     )
 
@@ -181,6 +181,9 @@ class ItemFilterForm(forms.Form):
                 
             elif self.cleaned_data['select_items'] == "archived":
                 kwargs['is_archived'] = True
+                
+            else:
+                kwargs['is_archived'] = False
             
             if self.cleaned_data['select_location'] is not None:
                 kwargs['location'] = Location.objects.get(name=self.cleaned_data['select_location']).pk
@@ -193,9 +196,7 @@ class ItemFilterForm(forms.Form):
             
             item_list = Item.objects.filter(**kwargs).select_related("last_status").filter(laststatus__machine_name="CHECKED_IN").order_by('-pk')
             
-            #import pdb; pdb.set_trace()
-            
-            if self.cleaned_data['sort_by'] is not None:
+            if self.cleaned_data['sort_by'] is not '':
                 item_list = item_list.order_by(self.cleaned_data['sort_by'])
 
             return item_list
@@ -207,8 +208,46 @@ class AdminItemFilterForm(ItemFilterForm):
     Administrative item filter form for the admin itemlist page
     """
  
-    display_archived_only = forms.BooleanField(required=False)
-         
+    admin_item_choices = (
+        ('active', 'Active'),
+        ('archived', 'Archived only'),
+        ('valuable', 'Valuable only'),
+    )
+    
+    select_items = forms.ChoiceField(choices=admin_item_choices, required=False, initial={'active'})
+    
+    def filter(self):
+    
+        # Setup the filter with the users selections
+        if self.is_valid():
+            
+            kwargs = {}
+             
+            if self.cleaned_data['select_items'] == 'valuable':
+                kwargs['is_valuable'] = True
+                
+            elif self.cleaned_data['select_items'] == "archived":
+                kwargs['is_archived'] = True
+                
+            else:
+                kwargs['is_archived'] = False
+            
+            if self.cleaned_data['select_location'] is not None:
+                kwargs['location'] = Location.objects.get(name=self.cleaned_data['select_location']).pk
+                
+            if self.cleaned_data['select_category'] is not None:
+                kwargs['category'] = Category.objects.get(name=self.cleaned_data['select_category']).pk
+            
+            if self.cleaned_data['search_keyword_or_name'] is not '':
+                kwargs['description'] = self.cleaned_data['search_keyword_or_name']
+            
+            item_list = Item.objects.filter(**kwargs).order_by('-pk')
+            
+            if self.cleaned_data['sort_by'] is not '':
+                item_list = item_list.order_by(self.cleaned_data['sort_by'])
+
+            return item_list
+            
     
 class ItemArchiveForm(forms.Form):
 
