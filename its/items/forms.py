@@ -13,6 +13,10 @@ from arcutils.ldap import escape, ldapsearch, parse_profile
 
 def check_ldap(username):
 
+    """
+    Checks LDAP to ensure a user name exists.
+    """
+
     q = escape(username)
     search = '(& (| (uid={q}*)) (psuprivate=N))'.format(q=q)
     results = ldapsearch(search)
@@ -29,6 +33,7 @@ def create_user(new_first_name, new_last_name, new_email):
     """
     Generates a unique user name.
     """
+    
     new_username = '_' + new_first_name + new_last_name
     i = 0
             
@@ -51,7 +56,7 @@ class AdminActionForm(forms.Form):
     Form used on the admin-action page
     """
     
-    action_choice = forms.ModelChoiceField(queryset=Action.objects.all().exclude(name="Returned"), required=True)
+    action_choice = forms.ModelChoiceField(queryset=Action.objects.all().exclude(machine_name=Action.RETURNED), required=True)
     note = forms.CharField(widget=forms.Textarea, required=False)
             
 
@@ -70,7 +75,6 @@ class AdminActionForm(forms.Form):
    
     def save(self, *args, item_pk, current_user, **kwargs):
 
-        
         action_choice = self.cleaned_data["action_choice"]
         item = Item.objects.get(pk=item_pk)
         
@@ -134,21 +138,21 @@ class ItemReturnForm(forms.Form):
         returned_item.returned_to = returned_user
         returned_item.save()
         
-        new_action = Action.objects.get(name="Returned")
+        new_action = Action.objects.get(machine_name=Action.RETURNED)
         new_status = Status(item=returned_item, action_taken=new_action, performed_by=performed_by, note="Returned to owner").save()
         
         if(returned_item.is_valuable == True):
             self.checkout_email(returned_item)
         
         return returned_item    
+
+
+class AdminItemFilterForm(forms.Form):
+
+    """
+    Administrative item filter form for the admin itemlist page
+    """
     
-
-class ItemFilterForm(forms.Form):
-
-    """
-    Item filter form for the regular itemlist page
-    """
-
     sort_choices = (
         ('-pk', 'Found most recently'),
         ('pk', 'Found least recently'),
@@ -157,56 +161,6 @@ class ItemFilterForm(forms.Form):
         ('description', 'Description'),
         ('possible_owner', 'Possible owner'),
     )
-    
-    item_choices = (
-        ('active', 'Active'),
-        ('valuable', 'Valuable only'),
-    )
-
-    select_location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
-    select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
-    sort_by = forms.ChoiceField(choices=sort_choices, required=False)
-    select_items = forms.ChoiceField(choices=item_choices, required=False, initial={'active'})
-    search_keyword_or_name = forms.CharField(max_length=50, required=False)
-
-    def filter(self):
-    
-        # Setup the filter with the users selections
-        if self.is_valid():
-            
-            kwargs = {}
-            
-            if self.cleaned_data['select_items'] == 'valuable':
-                kwargs['is_valuable'] = True
-                
-            elif self.cleaned_data['select_items'] == "archived":
-                kwargs['is_archived'] = True
-                
-            else:
-                kwargs['is_archived'] = False
-            
-            if self.cleaned_data['select_location'] is not None:
-                kwargs['location'] = Location.objects.get(name=self.cleaned_data['select_location']).pk
-                
-            if self.cleaned_data['select_category'] is not None:
-                kwargs['category'] = Category.objects.get(name=self.cleaned_data['select_category']).pk
-            
-            if self.cleaned_data['search_keyword_or_name'] is not '':
-                kwargs['description'] = self.cleaned_data['search_keyword_or_name']
-            
-            item_list = Item.objects.filter(**kwargs).select_related("last_status").filter(laststatus__machine_name="CHECKED_IN").order_by('-pk')
-            
-            if self.cleaned_data['sort_by'] is not '':
-                item_list = item_list.order_by(self.cleaned_data['sort_by'])
-
-            return item_list
-    
-    
-class AdminItemFilterForm(ItemFilterForm):
-
-    """
-    Administrative item filter form for the admin itemlist page
-    """
  
     admin_item_choices = (
         ('active', 'Active'),
@@ -214,15 +168,23 @@ class AdminItemFilterForm(ItemFilterForm):
         ('valuable', 'Valuable only'),
     )
     
-    select_items = forms.ChoiceField(choices=admin_item_choices, required=False, initial={'active'})
-    
+    select_location = forms.ModelChoiceField(queryset=Location.objects.all(), required=False)
+    select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
+    sort_by = forms.ChoiceField(choices=sort_choices, required=False)
+    select_items = forms.ChoiceField(choices=admin_item_choices, required=False, initial=admin_item_choices[0][0])
+    search_keyword_or_name = forms.CharField(max_length=50, required=False)
+        
     def filter(self):
     
+        kwargs = {}
+    
+        valid = False 
+        
         # Setup the filter with the users selections
         if self.is_valid():
             
-            kwargs = {}
-             
+            valid = True
+            
             if self.cleaned_data['select_items'] == 'valuable':
                 kwargs['is_valuable'] = True
                 
@@ -241,13 +203,41 @@ class AdminItemFilterForm(ItemFilterForm):
             if self.cleaned_data['search_keyword_or_name'] is not '':
                 kwargs['description'] = self.cleaned_data['search_keyword_or_name']
             
-            item_list = Item.objects.filter(**kwargs).order_by('-pk')
+        else:
+            kwargs['is_archived'] = False
             
-            if self.cleaned_data['sort_by'] is not '':
-                item_list = item_list.order_by(self.cleaned_data['sort_by'])
+        item_list = Item.objects.filter(**kwargs).order_by('-pk')   
+            
+        if valid and self.cleaned_data['sort_by'] is not '':
+            item_list = item_list.order_by(self.cleaned_data['sort_by'])    
+            
+        return item_list        
+        
 
-            return item_list
-            
+class ItemFilterForm(AdminItemFilterForm):
+
+    """
+    Item filter form for the regular itemlist page
+    """
+
+    
+    item_choices = (
+        ('active', 'Active'),
+        ('valuable', 'Valuable only'),
+    )
+
+
+    select_items = forms.ChoiceField(choices=item_choices, required=False, initial=item_choices[0][0])
+    
+    
+    def filter(self):
+    
+        item_list = super(ItemFilterForm, self).filter()
+        item_list = item_list.select_related("last_status").filter(laststatus__machine_name=Action.CHECKED_IN)
+        
+        return item_list
+    
+           
     
 class ItemArchiveForm(forms.Form):
 
@@ -380,7 +370,7 @@ class CheckInForm(ModelForm):
             
         item = super(CheckInForm, self).save(*args, **kwargs)
         
-        new_action = Action.objects.get(name="Checked in")
+        new_action = Action.objects.get(machine_name=CHECKED_IN)
         new_status = Status(item=item, action_taken=new_action, note="Initial check-in", performed_by=current_user).save()
         
         if(self.cleaned_data['email'] != ''):
