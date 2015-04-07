@@ -10,7 +10,7 @@
             {{ item_filter.select_location|bootstrap }}
             {{ item_filter.sort_by|bootstrap }}
             {{ item_filter.search_keyword_or_name|bootstrap }}
-            <input type="submit" class="btn btn-default" name="action" value="Filter" />
+            <input type="submit" class="btn btn-primary" name="action" value="Filter" />
             <a href="{% url 'itemlist' %}" class="btn btn-default" role="button">Reset</a>
         </form>
     </div>
