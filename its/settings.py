@@ -97,7 +97,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'permissions',
     'arcutils',
     'its.users',
 	'its.items',
