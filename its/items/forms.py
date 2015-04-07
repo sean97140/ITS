@@ -370,7 +370,7 @@ class CheckInForm(ModelForm):
             
         item = super(CheckInForm, self).save(*args, **kwargs)
         
-        new_action = Action.objects.get(machine_name=CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = Status(item=item, action_taken=new_action, note="Initial check-in", performed_by=current_user).save()
         
         if(self.cleaned_data['email'] != ''):
