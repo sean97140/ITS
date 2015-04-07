@@ -93,9 +93,10 @@ def checkout(request, item_num):
             messages.success(request, "Item successfully returned")
             form.save(item_pk=item_num, performed_by=request.user)	
             return HttpResponseRedirect(reverse("itemlist"))
+    else:
+        form = ItemReturnForm()
     
     chosen_item = get_object_or_404(Item, pk=item_num)
-    form = ItemReturnForm()
         
     return render(request, 'items/checkout.html', {'form': form, 'item': chosen_item})
 
