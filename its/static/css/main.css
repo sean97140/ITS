@@ -77,8 +77,17 @@ body {
 /* this is hacky, but lines up checkboxes and submit buttons when form-inline
  * is used with the |bootstrap template filter. There is a |bootstrap_inline
  * filter, but it hides the labels, which we don't want */
-.form-inline .checkbox, .form-inline input[type='submit'] {
+.form-inline .checkbox, .form-inline .btn, .form-inline input[type='submit'] {
     margin-top:20px;
     display:inline-block;
     vertical-align:middle;
+}
+
+.form-inline label {
+    font-weight:normal;
+    font-style:italic;
+}
+
+.form-inline {
+    margin-bottom:20px;
 }
