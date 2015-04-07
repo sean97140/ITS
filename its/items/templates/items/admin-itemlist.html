@@ -24,7 +24,7 @@
     <table class="table table-condensed table-striped">
         <thead>
         <tr><th>Select</th>
-            <th>ID</th>
+            <th>ID (valuable)</th>
             <th>Found on</th>
             <th>Found by</th>
             <th>Location</th>
@@ -38,34 +38,31 @@
             <th>Last action performed on</th>
             <th>Last action notes</th>
             <th>Last action taken by</th>
-            <th>Archive<input type="checkbox" name="select_all" value="" id="select_all"></th></tr>
+            <th class="text-center">Archive<input type="checkbox" name="select_all" value="" id="select_all"></th></tr>
     </thead>
     <tbody>
         {% for item, field in archive_form %}
-            {% if item.is_valuable %}
-                <tr class="danger">
-            {% else %}
-                <tr>
-            {% endif %}
-            <td><a href="{% url 'admin-action' item.pk %}">Action</a></td>
-            <td>{{ item.item_id }}</td>
-            <td>{{ item.found_on }}</td>
-            <td>{{ item.found_by }}</td>
-            <td>{{ item.location }}</td>
-            <td>{{ item.category }}</td>
-            <td>{{ item.description }}</td>
-            <td>{{ item.is_valuable }}</td>
-            <td>{{ item.possible_owner }}</td>
-            <td>{{ item.possible_owner_contacted }}</td>
-            <td>{{ item.returned_to }}</td>
-            <td>{{ item.last_status.action_taken }}</td>
-            <td>{{ item.last_status.timestamp }}</td>
-            <td>{{ item.last_status.note }}</td>
-            <td>{{ item.last_status.performed_by }}</td>
-            <td>{{ field }}</td></tr>
+            <tr class="{% if item.is_valuable %}valuable{% endif %}">
+                <td><a href="{% url 'admin-action' item.pk %}">Action</a></td>
+                <td class="item-id">{{ item.item_id }}</td>
+                <td>{{ item.found_on }}</td>
+                <td>{{ item.found_by }}</td>
+                <td>{{ item.location }}</td>
+                <td>{{ item.category }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.is_valuable }}</td>
+                <td>{{ item.possible_owner }}</td>
+                <td>{{ item.possible_owner_contacted }}</td>
+                <td>{{ item.returned_to }}</td>
+                <td>{{ item.last_status.action_taken }}</td>
+                <td>{{ item.last_status.timestamp }}</td>
+                <td>{{ item.last_status.note }}</td>
+                <td>{{ item.last_status.performed_by }}</td>
+                <td class="text-center">{{ field }}</td>
+            </tr>
         {% endfor %}
         </tbody>
      </table>
-     <input type="submit" name="action" class="btn btn-default" value="Archive selected items" />
+     <input type="submit" name="action" class="btn btn-primary pull-right" value="Archive selected items" />
      </form>
 {% endblock %}

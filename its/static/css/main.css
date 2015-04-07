@@ -91,3 +91,20 @@ body {
 .form-inline {
     margin-bottom:20px;
 }
+
+.item-table th {
+    width:1px;
+    white-space:nowrap;
+}
+
+.item-id {
+    white-space:nowrap;
+}
+
+.valuable .item-id:after {
+    content:" ($$$)";
+    color:#6A7F10;
+    font-weight:bold;
+    font-size:12px;
+    width:30px;
+}
