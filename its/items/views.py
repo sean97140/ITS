@@ -22,8 +22,8 @@ def admin_itemlist(request):
     """
      
     # Built item list from filter.
-    item_filter_form = AdminItemFilterForm(request.GET)
-    item_list = AdminItemFilterForm(request.GET).filter()
+    item_filter_form = AdminItemFilterForm(request.GET if "action" in request.GET else None)
+    item_list = item_filter_form.filter()
 
         
     # Process archive request
@@ -109,8 +109,8 @@ def itemlist(request):
     """
         
     # Create and filter item list
-    item_filter_form = ItemFilterForm(request.GET)
-    item_list = ItemFilterForm(request.GET).filter()
+    item_filter_form = ItemFilterForm(request.GET if "action" in request.GET else None)
+    item_list = item_filter_form.filter()
 
     return render(request, 'items/itemlist.html', {
         'items': item_list,
