@@ -1,13 +1,46 @@
-<table style="width:50%">
-    <tr><th><h3>ID #:</h3></th><td><h4>{{ item.item_id }}</h4></td></tr>
-    <tr><th><h3>Location:</h3></th><td><h4>{{ item.location }}</h4></td></tr>
-    <tr><th><h3>Category:</h3></th><td><h4>{{ item.category }}</h4></td></tr>
-    <tr><th><h3>Found on:</h3></th><td><h4>{{ item.found_on }}</h4></td></tr>
-    <tr><th><h3>Description:</h3></th><td><h4>{{ item.description }}</h4></td></tr>
-    <tr><th><h3>Valuable:</h3></th><td><h4>{{ item.is_valuable }}</h4></td></tr>
-    <tr><th><h3>Possible owner:</h3></th><td><h4>{{ item.possible_owner }}</h4></td></tr>
-    <tr><th><h3>Possible owner contacted:</h3></th><td><h4>{{ item.possible_owner_contacted }}</h4></td></tr>
-    <tr><th><h3>Returned to:</h3></th><td><h4>{{ item.returned_to }}</h4></td></tr>
-    <tr><th><h3>Archived:</h3></th><td><h4>{{ item.is_archived }}</h4></td></tr>
-    <tr><th><h3>Status:</h3></th><td><h4>{{ item.last_status.action_taken }}</h4></td></tr>
+<table class="table table-condensed table-striped item-table">
+    <tr>
+        <th>ID #:</th>
+        <td>{{ item.item_id }}</td>
+    </tr>
+    <tr>
+        <th>Location:</th>
+        <td>{{ item.location }}</td>
+    </tr>
+    <tr>
+        <th>Category:</th>
+        <td>{{ item.category }}</td>
+    </tr>
+    <tr>
+        <th>Found on:</th>
+        <td>{{ item.found_on }}</td>
+    </tr>
+    <tr>
+        <th>Description:</th>
+        <td>{{ item.description }}</td>
+    </tr>
+    <tr>
+        <th>Valuable:</th>
+        <td>{{ item.is_valuable }}</td>
+    </tr>
+    <tr>
+        <th>Possible owner:</th>
+        <td>{{ item.possible_owner }}</td>
+    </tr>
+    <tr>
+        <th>Possible owner contacted:</th>
+        <td>{{ item.possible_owner_contacted }}</td>
+    </tr>
+    <tr>
+        <th>Returned to:</th>
+        <td>{{ item.returned_to }}</td>
+    </tr>
+    <tr>
+        <th>Archived:</th>
+        <td>{{ item.is_archived }}</td>
+    </tr>
+    <tr>
+        <th>Status:</th>
+        <td>{{ item.last_status.action_taken }}</td>
+    </tr>
 </table>
