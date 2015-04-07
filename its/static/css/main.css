@@ -108,3 +108,13 @@ body {
     font-size:12px;
     width:30px;
 }
+
+.btn-primary {
+    background-color:#6A7F10;
+    border-color: #B4BF88;
+}
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+    background-color:#516300;
+    border-color: #dbe2bc;
+}
