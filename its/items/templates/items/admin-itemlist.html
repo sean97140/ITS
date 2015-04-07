@@ -9,7 +9,6 @@
     <h2>Admin Items</h2>
     <div class="form-inline" role="form">
         <form action="" method="get">
-            {% csrf_token %}
             {{ item_filter.select_items|bootstrap }}
             {{ item_filter.select_category|bootstrap }}
             {{ item_filter.select_location|bootstrap }}
