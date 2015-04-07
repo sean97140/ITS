@@ -22,6 +22,9 @@ class Action(models.Model):
     machine_name = models.CharField(max_length=50, unique=True)
     weight = models.IntegerField(default=0)
 	
+    CHECKED_IN = "CHECKED_IN"
+    RETURNED = "RETURNED"
+    
     class Meta:
         db_table = "action"
         ordering = ['-weight']
