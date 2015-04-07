@@ -23,6 +23,7 @@
     <form action ="" method="post">
         {% csrf_token %}
     <table class="table table-condensed table-striped">
+        <thead>
         <tr><th>Select</th>
             <th>ID</th>
             <th>Found on</th>
@@ -39,6 +40,8 @@
             <th>Last action notes</th>
             <th>Last action taken by</th>
             <th>Archive<input type="checkbox" name="select_all" value="" id="select_all"></th></tr>
+    </thead>
+    <tbody>
         {% for item, field in archive_form %}
             {% if item.is_valuable %}
                 <tr class="danger">
@@ -62,6 +65,7 @@
             <td>{{ item.last_status.performed_by }}</td>
             <td>{{ field }}</td></tr>
         {% endfor %}
+        </tbody>
      </table>
      <input type="submit" name="action" class="btn btn-default" value="Archive selected items" />
      </form>

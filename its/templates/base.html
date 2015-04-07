@@ -29,7 +29,6 @@
         <div class="{% if user.is_cloaked %}cloak-pushdown{% endif %}">
             <div class="container hidden-print" id="header">
                 <a href="http://www.pdx.edu"><img src="{% static 'img/logo.png' %}" alt="Home"></a>
-                <a id="brand" href="#">{{ project_name }}</a>
 
                 <div id="upper-info">
                     {% if user.is_authenticated %}
