@@ -1,14 +1,4 @@
 {% extends "base.html" %}
-
-    {% block head %}
-        <script>
-            function goBack() {
-                window.history.back();
-            }
-        </script>
-    {% endblock %}
-
-
 {% block content %}
 <h2>You are returning the following item:</h2>
 
@@ -22,15 +12,19 @@
     <tr><th><h3>Possible Owner:</h3></th><td><h4>{{ item.possible_owner }}</h4></td></tr>
 </table>
 
-<h3>Enter the owner's name as it appears on their photo ID, as well as their email address.</h3>
 <form action="" method="post">
-{% csrf_token %}
-<table>
-    <tr><th>{{ form.first_name|bootstrap }}</th></tr>
-    <tr><th>{{ form.last_name|bootstrap }}</th></tr>
-    <tr><th>{{ form.email|bootstrap }}</th></tr>
-</table>
-<br><br><input type="submit" name="action" class="btn btn-default" value="Return Item">
-<button class="btn btn-default" onclick="goBack()">Cancel</button>
+    {% csrf_token %}
+    <fieldset>
+        <legend>Enter the owner's name as it appears on their photo ID, as well as their email address.</legend>
+        <div class="row">
+            <div class="col-md-4">
+                {{ form.first_name|bootstrap }}
+                {{ form.last_name|bootstrap }}
+                {{ form.email|bootstrap }}
+                <input type="submit" name="action" class="btn btn-primary" value="Return Item">
+                <button class="btn btn-default pull-right" onclick="window.history.back()">Cancel</button>
+            </div>
+        </div>
+    </fieldset>
 </form>
 {% endblock %}
