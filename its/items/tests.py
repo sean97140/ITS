@@ -75,6 +75,72 @@ class CheckInTest(TestCase):
         response = self.client.post(reverse("checkin"), data)
         self.assertRedirects(response, reverse("printoff", args=[Item.objects.last().pk]))
 
+class ItemlistTest(TestCase):
+
+    fixtures = ["actions.json"]
+    
+    def test_login_required(self):
+        response = self.client.get(reverse("itemlist"))
+        self.assertRedirects(response, reverse("login") + "?next=/items/itemlist", target_status_code=302)
+        
+    def test_initial_get(self):
+        user = create_user()
+        self.client.login(username=user.username, password="password")
+        
+        response = self.client.get(reverse("itemlist"))
+        self.assertEqual(200, response.status_code)
+        
+    def test_filter_get(self):
+        user = create_user()
+        self.client.login(username=user.username, password="password")
+        
+        new_location = make(Location)
+        new_category = make(Category)
+        new_item = make(Item, location=new_location, category=new_category)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
+        new_status = make(Status, item=new_item, action_taken=new_action)
+   
+        data = {'select_location': new_location.pk, 'select_category': new_category.pk}
+        
+        response = self.client.get(reverse("itemlist"), data)
+        self.assertEqual(200, response.status_code)
+        self.assertIn(new_item.description, response.content.decode())
+    
+class CheckoutTest(TestCase):
+    
+    def test_login_required(self):
+        response = self.client.get(reverse("checkout", args=[1]))
+        self.assertRedirects(response, reverse("login") + "?next=/items/checkout/1/", target_status_code=302)
+        
+    def test_get(self):
+        user = create_user()
+        self.client.login(username=user.username, password="password")
+        
+        new_item = make(Item)
+        new_status = make(Status, item=new_item)
+        
+        response = self.client.get(reverse("checkout", args=[new_item.pk]))
+        self.assertEqual(200, response.status_code)
+        self.assertIn(new_item.description, response.content.decode())
+
+class AdminActionTest(TestCase):
+    
+    # (Broken) Redirects to admin/login/ instead of /accounts/login
+    #def test_login_required(self):
+    #    response = self.client.get(reverse("admin-action", args=[1]))
+    #    self.assertRedirects(response, reverse("login") + "?next=/items/admin-action/1/", target_status_code=302)
+
+    def test_get(self):
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        new_item = make(Item)
+        new_status = make(Status, item=new_item)
+        
+        response = self.client.get(reverse("admin-action", args=[new_item.pk]))
+        self.assertEqual(200, response.status_code)
+        self.assertIn(new_item.description, response.content.decode())
+        
 ## Create your tests here.
 #class ItemsTest(TestCase):
 #    
