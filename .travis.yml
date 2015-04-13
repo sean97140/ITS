@@ -5,7 +5,12 @@ sudo: false
 # command to install dependencies
 install:
   - cp variables.travis.py variables.py
-  - make init
+  - |
+    make init <<<"Joe
+    Doe
+    joe@example.com
+    joe
+    "
 # command to run tests
 script: make test
 # Spam the IRC channel yay!
