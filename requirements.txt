@@ -10,3 +10,4 @@ mock
 model-mommy
 coverage
 flake8
+django<1.8
