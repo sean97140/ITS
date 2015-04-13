@@ -9,6 +9,9 @@ ADMINS = []
 # to track, bypassing LDAP group checks
 LDAP_DISABLED = False
 
+# the hostname of the site, which will be used to construct absolute URLs
+HOSTNAME = '10.0.0.10:8000'
+
 # ('Your Name', 'your_email@example.com'),
 ADMINS = []
 
