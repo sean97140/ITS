@@ -20,8 +20,6 @@ init:
 	$(MANAGE) loaddata category.json
 	$(MANAGE) loaddata locations.json
 	@$(MANAGE) createadmin
-	@$(MAKE) run
-
 
 
 # run all the usual Django stuff to get this project bootstrapped
