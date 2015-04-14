@@ -56,9 +56,12 @@ class AdminActionForm(forms.Form):
     Form used on the admin-action page
     """
     
-    action_choice = forms.ModelChoiceField(queryset=Action.objects.all().exclude(machine_name=Action.RETURNED), required=True)
+    action_choice = forms.ModelChoiceField(queryset=Action.objects.all(), required=True)
     note = forms.CharField(widget=forms.Textarea, required=False)
-            
+    
+    first_name = forms.CharField(required=False)
+    last_name = forms.CharField(required=False)
+    email = forms.EmailField(required=False)
 
     def clean(self):
     
@@ -66,6 +69,18 @@ class AdminActionForm(forms.Form):
         cleaned_data = super().clean()
         action_choice = cleaned_data.get("action_choice")
         note = cleaned_data.get("note")
+        first_name = cleaned_data.get("first_name")
+        last_name = cleaned_data.get("last_name")
+        email = cleaned_data.get("email")
+        
+        if (str(action_choice) == "Returned") and (first_name is ''):
+            self.add_error("first_name", "First name is required when returning item.")
+        
+        if (str(action_choice) == "Returned") and (last_name is ''):
+            self.add_error("last_name", "Last name is required when returning item.")
+            
+        if (str(action_choice) == "Returned") and (email is ''):
+            self.add_error("email", "Email is required when returning item.")
         
         if str(action_choice) == 'Other' and note == '':
             self.add_error("note", "Note required when choosing action of type Other.")
