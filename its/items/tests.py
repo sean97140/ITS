@@ -20,18 +20,7 @@ def create_staff():
     
 
 class PrintoffTest(TestCase):
-    
-    def setUp(self):
-        user = create_user()
-        staff = create_staff()
-        
-        new_item = make(Item)
-        new_category = make(Category)
-        new_location = make(Location)
-        new_action = make(Action)
-        new_status = make(Status, item=new_item)
-        
-    
+       
     def test_login_required(self):
         response = self.client.get(reverse("printoff", args=[1]))
         self.assertRedirects(response, reverse("login") + "?next=/items/1/", target_status_code=302)
@@ -105,23 +94,7 @@ class ItemlistTest(TestCase):
         response = self.client.get(reverse("itemlist"), data)
         self.assertEqual(200, response.status_code)
         self.assertIn(new_item.description, response.content.decode())
-    
-class CheckoutTest(TestCase):
-    
-    def test_login_required(self):
-        response = self.client.get(reverse("checkout", args=[1]))
-        self.assertRedirects(response, reverse("login") + "?next=/items/checkout/1/", target_status_code=302)
-        
-    def test_get(self):
-        user = create_user()
-        self.client.login(username=user.username, password="password")
-        
-        new_item = make(Item)
-        new_status = make(Status, item=new_item)
-        
-        response = self.client.get(reverse("checkout", args=[new_item.pk]))
-        self.assertEqual(200, response.status_code)
-        self.assertIn(new_item.description, response.content.decode())
+
 
 class AdminActionTest(TestCase):
     
@@ -140,7 +113,8 @@ class AdminActionTest(TestCase):
         response = self.client.get(reverse("admin-action", args=[new_item.pk]))
         self.assertEqual(200, response.status_code)
         self.assertIn(new_item.description, response.content.decode())
-        
+
+
 ## Create your tests here.
 #class ItemsTest(TestCase):
 #    
