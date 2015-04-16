@@ -15,7 +15,6 @@ urlpatterns = patterns(
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', home, name='home'),
-    url(r'^items/checkout/(?P<item_num>\d+)/$', items.checkout, name='checkout'),
     url(r'^items/admin-action/(?P<item_num>\d+)/$', items.adminaction, name='admin-action'),
     url(r'^items/checkin$', items.checkin, name='checkin'),
 	url(r'^items/checkin$', items.checkin, name='index'),
