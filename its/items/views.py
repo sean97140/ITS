@@ -3,7 +3,7 @@ from django.template import RequestContext, loader
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from its.items.models import Item, Location, Category, Status, Action
 from its.users.models import User
-from its.items.forms import CheckInForm, ItemFilterForm, ItemArchiveForm, AdminItemFilterForm, ItemReturnForm, AdminActionForm
+from its.items.forms import CheckInForm, ItemFilterForm, ItemArchiveForm, AdminItemFilterForm, AdminActionForm
 from django.forms.models import model_to_dict
 from django.core.urlresolvers import reverse
 from arcutils.ldap import escape, ldapsearch, parse_profile
@@ -46,21 +46,21 @@ def admin_itemlist(request):
         })
 
        
-@staff_member_required
+@login_required
 def adminaction(request, item_num):
     
     """
     Administrative action page
     Allows user to change status of items.  
     """
-    
+    current_user = request.user
     chosen_item = get_object_or_404(Item, pk=item_num)
     status_list = Status.objects.filter(item=item_num)
     
     # Perform action on item
     if request.method == 'POST':
     
-        form = AdminActionForm(request.POST)
+        form = AdminActionForm(request.POST, user=request.user)
         
         if form.is_valid():
             messages.success(request, "Item successfully changed")
@@ -68,37 +68,13 @@ def adminaction(request, item_num):
             return HttpResponseRedirect(reverse("admin-itemlist"))
     
     else:
-        form = AdminActionForm()
+        form = AdminActionForm(user=request.user)
     
     context = {'item': chosen_item,
                'form': form,
                'status_list': status_list}
 
     return render(request, 'items/admin-action.html', context)
-
-
-@login_required
-def checkout(request, item_num):
-    
-    """
-    Return item form
-    Allows user to return the item to owner
-    """
-    
-    if request.method == 'POST':
-    
-        form = ItemReturnForm(request.POST)
-        
-        if form.is_valid():
-            messages.success(request, "Item successfully returned")
-            form.save(item_pk=item_num, performed_by=request.user)	
-            return HttpResponseRedirect(reverse("itemlist"))
-    else:
-        form = ItemReturnForm()
-    
-    chosen_item = get_object_or_404(Item, pk=item_num)
-        
-    return render(request, 'items/checkout.html', {'form': form, 'item': chosen_item})
 
 
 @login_required
