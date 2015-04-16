@@ -5,6 +5,7 @@ from its.users.models import User
 from its.items.models import Item, Location, Category, Action, Status
 from its.items.forms import CheckInForm
 from unittest.mock import patch
+from django.test.client import RequestFactory
 
 def create_user():
     user = make(User, is_active=True)
@@ -114,6 +115,44 @@ class AdminActionTest(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertIn(new_item.description, response.content.decode())
 
+class AdminItemlistTest(TestCase):
+    
+    # (Broken) Redirects to admin/login/ instead of /accounts/login
+    #def test_staff_required(self):
+    #    response = self.client.get(reverse('admin-itemlist'))
+    #    self.assertRedirects(response, reverse("login") + "?next=/items/admin-itemlist", target_status_code=302)
+    
+    def test_initial_get(self):
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        response = self.client.get(reverse("admin-itemlist"))
+        self.assertEqual(200, response.status_code)
+        
+    def test_blank_post(self):
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        request = self.client.post(reverse("admin-itemlist"))
+        self.assertRedirects(request, reverse("admin-itemlist"))
+     
+    # Not working yet.
+    def test_archive_post(self):
+        
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        new_item = make(Item)
+        new_status = make(Status, item=new_item)
+        
+        request = self.client.post(reverse("admin-itemlist"), {'archive-' + str(new_item.pk): new_item.pk})
+        self.assertRedirects(request, reverse("admin-itemlist"))
+        self.assertEqual(True, new_item.is_archived)
+        
+        
+        
+        
+        
 
 ## Create your tests here.
 #class ItemsTest(TestCase):
