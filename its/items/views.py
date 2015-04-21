@@ -11,9 +11,18 @@ from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
 
+
+def staff_check(user):
+    """
+    Make sure the user is a staff member.
+    """
+
+    return user.is_staff
+    
    
-@staff_member_required
+@user_passes_test(staff_check)
 def admin_itemlist(request):
  
     """
