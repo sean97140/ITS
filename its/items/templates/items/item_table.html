@@ -35,10 +35,12 @@
         <th>Returned to:</th>
         <td>{{ item.returned_to }}</td>
     </tr>
-    <tr>
-        <th>Archived:</th>
-        <td>{{ item.is_archived }}</td>
-    </tr>
+    {% if not exclude %}
+        <tr>
+            <th>Archived:</th>
+            <td>{{ item.is_archived }}</td>
+        </tr>
+    {% endif %}
     <tr>
         <th>Status:</th>
         <td>{{ item.last_status.action_taken }}</td>
