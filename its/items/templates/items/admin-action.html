@@ -1,4 +1,10 @@
 {% extends "base.html" %}
+    
+    {% block head %}
+
+    <script src="{{ STATIC_URL }}js/admin-action.js"></script>
+
+    {% endblock %}
 
 {% block content %}
 
@@ -29,10 +35,20 @@
         </table>
     </div>
     <form action="" method="post" class="col-md-6">
-        <h3>Perform an Action on Item #{{ item.pk }}</h3>
+        <h3>Perform an Action</h3>
         {% csrf_token %}
         {{ form.action_choice|bootstrap }}
         {{ form.note|bootstrap  }}
+        <div class="returnFields" style="{% if not action_choice.data %}display:none{% endif %}">
+            <legend>Enter the owner's name as it appears on their photo ID, as well as their email address.</legend>
+            <div class="row">
+                <div class="col-md-4">
+                    {{ form.first_name|bootstrap }}
+                    {{ form.last_name|bootstrap }}
+                    {{ form.email|bootstrap }}
+                </div>
+            </div>
+        </div>
         <input type="submit" name="action" class="btn btn-primary" value="Perform action">
         <button onclick="window.history.back()" class="btn btn-default pull-right">Cancel</button>
     </form>     

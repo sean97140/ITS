@@ -55,6 +55,7 @@ class Location(models.Model):
 	
     class Meta:
         db_table = "location"
+        ordering = ['name']
 		
     def __str__(self):
         return self.name
@@ -66,6 +67,7 @@ class Category(models.Model):
 	
     class Meta:
         db_table = "category"
+        ordering = ['name']
 	
     def __str__(self):
         return self.name

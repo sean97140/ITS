@@ -30,7 +30,7 @@
     <tbody>
         {% for item in items %}
             <tr class="{% if item.is_valuable %}valuable{% endif %}">
-                <td><a href="{% url 'checkout' item.pk %}">Return</a></td>
+                <td><a href="{% url 'admin-action' item.pk %}">Return</a></td>
                 <td class="item-id">{{ item.item_id }}</td>
                 <td>{{ item.location }}</td>
                 <td>{{ item.category }}</td>

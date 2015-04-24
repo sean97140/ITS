@@ -1,10 +1,12 @@
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
 from model_mommy.mommy import make
 from its.users.models import User
 from its.items.models import Item, Location, Category, Action, Status
-from its.items.forms import CheckInForm
-from unittest.mock import patch
+from its.items.forms import AdminActionForm, AdminItemFilterForm, ItemFilterForm, ItemArchiveForm, CheckInForm
+from its.items.views import admin_itemlist, adminaction, itemlist, checkin, printoff
+from unittest.mock import patch, Mock
+
 
 def create_user():
     user = make(User, is_active=True)
@@ -20,18 +22,7 @@ def create_staff():
     
 
 class PrintoffTest(TestCase):
-    
-    def setUp(self):
-        user = create_user()
-        staff = create_staff()
-        
-        new_item = make(Item)
-        new_category = make(Category)
-        new_location = make(Location)
-        new_action = make(Action)
-        new_status = make(Status, item=new_item)
-        
-    
+       
     def test_login_required(self):
         response = self.client.get(reverse("printoff", args=[1]))
         self.assertRedirects(response, reverse("login") + "?next=/items/1/", target_status_code=302)
@@ -65,15 +56,175 @@ class CheckInTest(TestCase):
         user = create_user()
         self.client.login(username=user.username, password="password")
         
-        new_category = make(Category)
+        #new_category = make(Category)
+        #new_location = make(Location)
+        #
+        #data = {'location': new_location.pk, 'category': new_category.pk, 
+        #'description': "test", 'username': "", 'first_name': "", 
+        #'last_name': "", 'email': ""}
+        
+        with patch("its.items.views.CheckInForm.is_valid", return_value=True):
+            with patch("its.items.views.CheckInForm.save", return_value=Mock(pk=123)) as save:
+                data = {"foo": "bar"}
+                response = self.client.post(reverse("checkin"), data)
+                self.assertTrue(save.call_args[1]['current_user'] == user)
+                self.assertRedirects(response, reverse("printoff", args=[123]), target_status_code=404)
+
+
+    def test_invalid_post(self):
+        user = create_user()
+        self.client.login(username=user.username, password="password")
+
+        with patch("its.items.views.CheckInForm.is_valid", return_value=False):
+            data = {"foo": "bar"}
+            response = self.client.post(reverse("checkin"), data)
+            self.assertEqual(response.status_code, 200)
+
+class ItemlistTest(TestCase):
+
+    fixtures = ["actions.json"]
+    
+    def test_login_required(self):
+        response = self.client.get(reverse("itemlist"))
+        self.assertRedirects(response, reverse("login") + "?next=/items/itemlist", target_status_code=302)
+        
+    def test_initial_get(self):
+        user = create_user()
+        self.client.login(username=user.username, password="password")
+        
+        response = self.client.get(reverse("itemlist"))
+        self.assertEqual(200, response.status_code)
+        
+    def test_filter_get(self):
+        user = create_user()
+        self.client.login(username=user.username, password="password")
+        
         new_location = make(Location)
+        new_category = make(Category)
+        new_item = make(Item, location=new_location, category=new_category)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
+        new_status = make(Status, item=new_item, action_taken=new_action)
+   
+        data = {'select_location': new_location.pk, 'select_category': new_category.pk}
         
-        data = {'location': new_location.pk, 'category': new_category.pk, 
-        'description': "test", 'username': "", 'first_name': "", 
-        'last_name': "", 'email': ""}
+        response = self.client.get(reverse("itemlist"), data)
+        self.assertEqual(200, response.status_code)
+        self.assertIn(new_item.description, response.content.decode())
+
+
+class AdminActionTest(TestCase):
+    
+    def test_login_required(self):
+        response = self.client.get(reverse("admin-action", args=[1]))
+        self.assertRedirects(response, reverse("login") + "?next=/items/admin-action/1/", target_status_code=302)
+
+    def test_get(self):
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
         
-        response = self.client.post(reverse("checkin"), data)
-        self.assertRedirects(response, reverse("printoff", args=[Item.objects.last().pk]))
+        new_item = make(Item)
+        new_status = make(Status, item=new_item)
+        
+        response = self.client.get(reverse("admin-action", args=[new_item.pk]))
+        self.assertEqual(200, response.status_code)
+        self.assertIn(new_item.description, response.content.decode())
+
+class AdminItemlistTest(TestCase):
+    
+    def test_staff_required(self):
+        response = self.client.get(reverse('admin-itemlist'))
+        self.assertRedirects(response, reverse("login") + "?next=/items/admin-itemlist", target_status_code=302)
+    
+    def test_initial_get(self):
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        response = self.client.get(reverse("admin-itemlist"))
+        self.assertEqual(200, response.status_code)
+        
+    def test_blank_post(self):
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        request = self.client.post(reverse("admin-itemlist"))
+        self.assertRedirects(request, reverse("admin-itemlist"))
+     
+    def test_valid_archive_post(self):
+        
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        with patch('its.items.views.ItemArchiveForm.is_valid', return_value=True) as m:
+            with patch('its.items.views.ItemArchiveForm.save', return_value=True) as save:
+                form = {'test': 'data'}
+                
+                request = self.client.post(reverse("admin-itemlist"), form)
+                self.assertRedirects(request, reverse("admin-itemlist"))
+                
+    def test_invalid_archive_post(self):
+        
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        with patch('its.items.views.ItemArchiveForm.is_valid', return_value=False) as m:
+                form = {'test': 'data'}
+                
+                request = self.client.post(reverse("admin-itemlist"), form)
+                self.assertEqual(200, request.status_code)
+                
+        #new_item = make(Item)
+        #new_status = make(Status, item=new_item)
+        #form = {'action': 'Archive selected items', 
+        #        'archive-' + str(new_item.pk): 'on'
+        #        }
+        #request = self.client.post(reverse("admin-itemlist"), data=form)
+        #self.assertRedirects(request, reverse("admin-itemlist"))
+        
+        # new_item was updated, and the reference is now stale, update it.
+        #new_item = Item.objects.get(item_id=new_item.pk)
+        #self.assertEqual(True, new_item.is_archived)
+        
+        
+        
+# Form tests
+        
+class CheckInFormTest(TestCase):
+    def test_clean_errors(self):
+        data = {
+            "possible_owner_found": "1",
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "username": "a"
+        }
+        with patch("its.items.forms.ModelForm.clean", return_value=data) as m:
+            with patch("its.items.forms.check_ldap", return_value=False) as ldap: 
+                with patch("its.items.forms.CheckInForm.add_error") as add_error:
+                    form = CheckInForm()
+                    form.clean()
+                    add_error.assert_any_call_with("first_name", "First name required")
+                    add_error.assert_any_call_with("last_name", "Last name required")
+                    add_error.assert_any_call_with("email", "Email required")
+                    add_error.assert_any_call_with("username", "Invalid username, enter a valid username or leave blank.")
+     
+    def test_clean_no_errors(self):
+        data = {
+            "possible_owner_found": "1",
+            "first_name": "Test",
+            "last_name": "Test",
+            "email": "test@test.com",
+            "username": "a"
+        }
+        with patch('its.items.forms.ModelForm.clean', return_value=data) as m:
+            with patch('its.items.forms.check_ldap', return_value=True) as ldap:
+                form = CheckInForm()
+                cleaned_data = form.clean()
+                self.assertTrue(cleaned_data['possible_owner_found'] == '1')
+                self.assertTrue(cleaned_data['username'] == 'a')
+                self.assertTrue(cleaned_data['first_name'] == 'Test')
+                self.assertTrue(cleaned_data['last_name'] == 'Test')
+                self.assertTrue(cleaned_data['email'] == 'test@test.com')
+        
 
 ## Create your tests here.
 #class ItemsTest(TestCase):

@@ -48,56 +48,26 @@ def create_user(new_first_name, new_last_name, new_email):
     
     return new_user
 
-    
 
 class AdminActionForm(forms.Form):
     
     """
     Form used on the admin-action page
     """
-    
-    action_choice = forms.ModelChoiceField(queryset=Action.objects.all().exclude(machine_name=Action.RETURNED), required=True)
+
+    action_choice = forms.ModelChoiceField(queryset=Action.objects.all(), required=True, empty_label=None)
     note = forms.CharField(widget=forms.Textarea, required=False)
-            
-
-    def clean(self):
+    first_name = forms.CharField(required=False)
+    last_name = forms.CharField(required=False)
+    email = forms.EmailField(required=False)
     
-        # require note field on action of OTHER
-        cleaned_data = super().clean()
-        action_choice = cleaned_data.get("action_choice")
-        note = cleaned_data.get("note")
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super(AdminActionForm, self).__init__(*args, **kwargs)
         
-        if str(action_choice) == 'Other' and note == '':
-            self.add_error("note", "Note required when choosing action of type Other.")
-        
-        return cleaned_data
-  
-   
-    def save(self, *args, item_pk, current_user, **kwargs):
-
-        action_choice = self.cleaned_data["action_choice"]
-        item = Item.objects.get(pk=item_pk)
-        
-        # If they chose to change status to checked in we need to make sure to
-        # set the returned_to field to None
-        if str(action_choice) == "Checked in":
-            item.returned_to = None
-        
-        new_action = Action.objects.get(name=self.cleaned_data['action_choice'])
-        new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note'], performed_by=current_user).save()
-        item.save()
-
-        
-
-class ItemReturnForm(forms.Form):
+        if not self.user.is_staff:
+            self.fields['action_choice'].queryset = self.fields['action_choice'].queryset.filter(machine_name=Action.RETURNED)
     
-    """
-    Form used on the checkout page
-    """
-    
-    first_name = forms.CharField(required=True)
-    last_name = forms.CharField(required=True)
-    email = forms.EmailField(required=True)
     
     def checkout_email(self, item):
         
@@ -122,29 +92,61 @@ class ItemReturnForm(forms.Form):
 
         EmailMessage(subject, message, to=to, from_email=from_email).send()
 	
+    
+    def clean(self):
+    
+        # require note field on action of OTHER
+        cleaned_data = super().clean()
+        action_choice = cleaned_data.get("action_choice")
+        note = cleaned_data.get("note")
+        first_name = cleaned_data.get("first_name")
+        last_name = cleaned_data.get("last_name")
+        email = cleaned_data.get("email")
+        
+        if (str(action_choice.machine_name) == Action.RETURNED) and not first_name:
+            self.add_error("first_name", "First name is required when returning item.")
+        
+        if (str(action_choice.machine_name) == Action.RETURNED) and not last_name:
+            self.add_error("last_name", "Last name is required when returning item.")
+            
+        if (str(action_choice.machine_name) == Action.RETURNED) and not email:
+            self.add_error("email", "Email is required when returning item.")
+        
+        if str(action_choice) == 'Other' and not note:
+            self.add_error("note", "Note required when choosing action of type Other.")
+        
+        return cleaned_data
+  
+   
+    def save(self, *args, item_pk, current_user, **kwargs):
 
-    def save(self, *args, item_pk, performed_by, **kwargs):
+        action_choice = self.cleaned_data["action_choice"]
+        item = Item.objects.get(pk=item_pk)
+        first_name = self.cleaned_data.get("first_name")
+        last_name = self.cleaned_data.get("last_name")
+        email = self.cleaned_data.get("email")
+        new_action = Action.objects.get(name=self.cleaned_data['action_choice'])
+        new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note'], performed_by=current_user).save()
         
-        user_first_name = self.cleaned_data['first_name']
-        user_last_name = self.cleaned_data['last_name']
-        user_email = self.cleaned_data['email']
-        
-        try:
-            returned_user = User.objects.get(first_name=user_first_name, last_name=user_last_name, email=user_email)
-        except User.DoesNotExist:
-            returned_user = create_user(user_first_name, user_last_name, user_email)
-               
-        returned_item = Item.objects.get(pk=item_pk)
-        returned_item.returned_to = returned_user
-        returned_item.save()
-        
-        new_action = Action.objects.get(machine_name=Action.RETURNED)
-        new_status = Status(item=returned_item, action_taken=new_action, performed_by=performed_by, note="Returned to owner").save()
-        
-        if(returned_item.is_valuable == True):
-            self.checkout_email(returned_item)
-        
-        return returned_item    
+        # If they chose to change status to checked in we need to make sure to
+        # set the returned_to field to None
+        if str(action_choice.machine_name) == Action.CHECKED_IN:
+            item.returned_to = None
+            
+        if str(action_choice.machine_name) == Action.RETURNED:
+            
+            try:
+                returned_user = User.objects.get(first_name=first_name, last_name=last_name, email=email)
+            except User.DoesNotExist:
+                returned_user = create_user(first_name, last_name, email)
+            
+            item.returned_to = returned_user
+            
+            if(item.is_valuable == True):
+                self.checkout_email(item)
+
+        item.save()
+        return item
 
 
 class AdminItemFilterForm(forms.Form):
@@ -240,6 +242,10 @@ class ItemFilterForm(AdminItemFilterForm):
            
     
 class ItemArchiveForm(forms.Form):
+
+    """
+    Item archiving form used on the administrative item listing page.
+    """
 
     def __init__(self, *args, item_list, **kwargs):
 
