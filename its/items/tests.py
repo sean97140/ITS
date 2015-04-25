@@ -13,6 +13,13 @@ def create_user():
     user.set_password("password")
     user.save()
     return user
+
+def create_full_user(first_name, last_name, email):
+    user = make(User, first_name=first_name, last_name=last_name, email=email, is_active=False, is_staff=False)
+    user.set_password("password")
+    user.save()
+    return user
+
     
 def create_staff():
     user = make(User, is_active=True, is_staff=True)
@@ -224,7 +231,82 @@ class CheckInFormTest(TestCase):
                 self.assertTrue(cleaned_data['first_name'] == 'Test')
                 self.assertTrue(cleaned_data['last_name'] == 'Test')
                 self.assertTrue(cleaned_data['email'] == 'test@test.com')
+    
+    def test_save_new_user(self):
         
+        fixtures = ["actions.json"]
+        
+        new_item = make(Item)
+        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_status = make(Status, action_taken=new_action, item=new_item)
+        new_category = make(Category)
+        new_location = make(Location)
+                
+        data = {
+                'location': new_location,
+                'category': new_category,
+                'description': new_item.description,
+                'is_valuable' : True,
+                'username': "",
+                'possible_owner_contacted': True,
+                'possible_owner_found': True,
+                'first_name': "test",
+                'last_name': "test",
+                'email': "test@test.com",
+        }
+        
+        user = create_user()
+        
+        with patch('its.items.forms.CheckInForm.clean', return_value=data) as m:
+            form = CheckInForm(data)
+            form.cleaned_data = data
+            
+            with patch("its.items.forms.ModelForm.save", return_value=new_item) as save:
+                form.save(current_user=user)
+        
+                new_user = User.objects.get(first_name=data['first_name'], last_name=data['last_name'], email=data['email'])
+            
+                self.assertTrue(data['first_name'] == new_user.first_name)
+                self.assertTrue(data['last_name'] == new_user.last_name)
+                self.assertTrue(data['email'] == new_user.email)
+ 
+    def test_save_old_user(self):
+        
+        fixtures = ["actions.json"]
+        
+        new_item = make(Item)
+        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_status = make(Status, action_taken=new_action, item=new_item)
+        new_category = make(Category)
+        new_location = make(Location)
+                
+        data = {
+                'location': new_location,
+                'category': new_category,
+                'description': new_item.description,
+                'is_valuable' : True,
+                'username': "",
+                'possible_owner_contacted': True,
+                'possible_owner_found': True,
+                'first_name': "test",
+                'last_name': "test",
+                'email': "test@test.com",
+        }
+        
+        user = create_user()
+        old_patron = create_full_user(data['first_name'], data['last_name'], data['email'])
+        
+        original_num_users = User.objects.all().count()
+        
+        with patch('its.items.forms.CheckInForm.clean', return_value=data) as m:
+            form = CheckInForm(data)
+            form.cleaned_data = data
+            with patch("its.items.forms.ModelForm.save", return_value=new_item) as save:
+                form.save(current_user=user)
+                new_user = User.objects.get(first_name=data['first_name'], last_name=data['last_name'], email=data['email'])
+            
+                self.assertTrue(original_num_users == User.objects.all().count())
+
 
 ## Create your tests here.
 #class ItemsTest(TestCase):
