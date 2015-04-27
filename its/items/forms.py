@@ -103,16 +103,16 @@ class AdminActionForm(forms.Form):
         last_name = cleaned_data.get("last_name")
         email = cleaned_data.get("email")
         
-        if (str(action_choice.machine_name) == Action.RETURNED) and not first_name:
+        if (action_choice.machine_name == Action.RETURNED) and not first_name:
             self.add_error("first_name", "First name is required when returning item.")
         
-        if (str(action_choice.machine_name) == Action.RETURNED) and not last_name:
+        if (action_choice.machine_name == Action.RETURNED) and not last_name:
             self.add_error("last_name", "Last name is required when returning item.")
             
-        if (str(action_choice.machine_name) == Action.RETURNED) and not email:
+        if (action_choice.machine_name == Action.RETURNED) and not email:
             self.add_error("email", "Email is required when returning item.")
         
-        if str(action_choice) == 'Other' and not note:
+        if (action_choice.machine_name == Action.OTHER) and not note:
             self.add_error("note", "Note required when choosing action of type Other.")
         
         return cleaned_data
@@ -130,10 +130,10 @@ class AdminActionForm(forms.Form):
         
         # If they chose to change status to checked in we need to make sure to
         # set the returned_to field to None
-        if str(action_choice.machine_name) == Action.CHECKED_IN:
+        if action_choice.machine_name == Action.CHECKED_IN:
             item.returned_to = None
             
-        if str(action_choice.machine_name) == Action.RETURNED:
+        if action_choice.machine_name == Action.RETURNED:
             
             try:
                 returned_user = User.objects.get(first_name=first_name, last_name=last_name, email=email)

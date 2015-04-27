@@ -24,6 +24,7 @@ class Action(models.Model):
 	
     CHECKED_IN = "CHECKED_IN"
     RETURNED = "RETURNED"
+    OTHER = "OTHER"
     
     class Meta:
         db_table = "action"
