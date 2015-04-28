@@ -134,7 +134,10 @@ def autocomplete(request):
     """
 
     q = escape(request.GET['query'])
-    search = '(& (| (uid={q}*) (cn={q}*)) (psuprivate=N))'.format(q=q)
+    if len(q) < 3:
+        return HttpResponse("[]")
+
+    search = '(uid={q}*)'.format(q=q)
     results = ldapsearch(search)
     # I don't think LDAP guarantees the sort order, so we have to sort ourselves
     results.sort(key=lambda o: o[1]['uid'][0])

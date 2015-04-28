@@ -283,7 +283,7 @@ class CheckInForm(ModelForm):
     """
     
     possible_owner_found = forms.BooleanField(required=False)
-    username = forms.CharField(required=False, help_text="Or enter a first/last name")
+    username = forms.CharField(required=False)
     first_name = forms.CharField(required=False)
     last_name = forms.CharField(required=False)
     email = forms.EmailField(required=False)
