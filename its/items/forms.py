@@ -203,7 +203,7 @@ class AdminItemFilterForm(forms.Form):
                 kwargs['category'] = Category.objects.get(name=self.cleaned_data['select_category']).pk
             
             if self.cleaned_data['search_keyword_or_name'] is not '':
-                kwargs['description'] = self.cleaned_data['search_keyword_or_name']
+                kwargs['description__icontains'] = self.cleaned_data['search_keyword_or_name']
             
         else:
             kwargs['is_archived'] = False
