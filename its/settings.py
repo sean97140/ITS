@@ -37,7 +37,7 @@ CHECKOUT_EMAIL_FROM = 'lost_found_admin@pdx.edu'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'its',
+        'NAME': variable("DB_NAME", default="ITS"),
         # the default is fine for dev
         'USER': variable("DB_USER", default='root'),
         # the default is fine for dev
