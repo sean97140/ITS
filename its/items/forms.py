@@ -18,7 +18,7 @@ def check_ldap(username):
     """
 
     q = escape(username)
-    search = '(& (| (uid={q}*)) (psuprivate=N))'.format(q=q)
+    search = '(uid={q}*)'.format(q=q)
     results = ldapsearch(search)
     
     if results:
