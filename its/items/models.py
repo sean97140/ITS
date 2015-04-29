@@ -25,6 +25,10 @@ class Action(models.Model):
     CHECKED_IN = "CHECKED_IN"
     RETURNED = "RETURNED"
     OTHER = "OTHER"
+    MISSING = "MISSING"
+    DISPOSED = "DISPOSED"
+    ID_SERVICES = "ID_SERVICES"
+    CPSO = "CPSO"
     
     class Meta:
         db_table = "action"
@@ -65,7 +69,19 @@ class Location(models.Model):
 class Category(models.Model):
     category_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
+    machine_name = models.CharField(max_length=50, unique=False, null=True)
 	
+    OTHER = "OTHER"
+    USB = "USB"
+    ID = "ID"
+    BOOK = "BOOK"
+    CLOTHING = "CLOTHING"
+    GLASSES = "GLASSES"
+    HEADPHONES = "HEADPHONES"
+    KEYS = "KEYS"
+    MUSIC = "MUSIC"
+    PHONE = "PHONE"
+    
     class Meta:
         db_table = "category"
         ordering = ['name']
@@ -75,11 +91,14 @@ class Category(models.Model):
 
 		
 class Item(models.Model):
+
+    is_valuable_help_text = "Select this box if the item is an ID, key(s), or is valued at $50 or more. Items valued over $50 are turned into CPSO as soon as possible. Student IDs are turned in the ID services window in the Neuberger Hall Lobby. Checking this box automatically generates an email for the item to be picked up from the lab. USB DRIVES ARE NOT VALUABLE."
+
     item_id = models.AutoField(primary_key=True)
     location = models.ForeignKey(Location)
     category = models.ForeignKey(Category)
     description = models.TextField()
-    is_valuable = models.BooleanField(default=False)
+    is_valuable = models.BooleanField(default=False, help_text = is_valuable_help_text)
     possible_owner = models.ForeignKey(User, related_name='item_possible_owner', null=True)
     possible_owner_contacted = models.BooleanField(default=False)
     returned_to = models.ForeignKey(User, related_name='item_returned_to', null=True)
