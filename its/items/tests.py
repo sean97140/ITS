@@ -9,12 +9,22 @@ from unittest.mock import patch, Mock
 
 
 def create_user():
+
+    """
+    Creates a blank regular user.
+    """
+
     user = make(User, is_active=True)
     user.set_password("password")
     user.save()
     return user
 
 def create_full_user(first_name, last_name, email):
+    
+    """
+    Creates a full regular user
+    """
+
     user = make(User, first_name=first_name, last_name=last_name, email=email, is_active=False, is_staff=False)
     user.set_password("password")
     user.save()
@@ -22,6 +32,11 @@ def create_full_user(first_name, last_name, email):
 
     
 def create_staff():
+
+    """
+    Creates a blank staff user.
+    """
+
     user = make(User, is_active=True, is_staff=True)
     user.set_password("password")
     user.save()
@@ -31,10 +46,20 @@ def create_staff():
 class PrintoffTest(TestCase):
        
     def test_login_required(self):
+    
+        """
+        Tests that the view sends the unauthenticated user to the login page.
+        """
+    
         response = self.client.get(reverse("printoff", args=[1]))
         self.assertRedirects(response, reverse("login") + "?next=/items/1/", target_status_code=302)
 
     def test_get(self):
+    
+        """
+        Tests that the view returns a page with the correct item information.
+        """
+            
         user = create_user()
 
         self.client.login(username=user.username, password="password")
@@ -49,10 +74,20 @@ class CheckInTest(TestCase):
     fixtures = ["actions.json"]
     
     def test_login_required(self):
+        
+        """
+        Tests that the view sends the unauthenticated user to the login page.
+        """
+    
         response = self.client.get(reverse("checkin"))
         self.assertRedirects(response, reverse("login") + "?next=/items/checkin", target_status_code=302)
         
     def test_get(self):
+    
+        """
+        Tests that the view returns the correct page.
+        """
+    
         user = create_user()
         self.client.login(username=user.username, password="password")
         
@@ -60,16 +95,15 @@ class CheckInTest(TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_valid_post(self):
+    
+        """
+        Tests that the view sends the user to the print off page after
+        a successful form submission. 
+        """
+    
         user = create_user()
         self.client.login(username=user.username, password="password")
-        
-        #new_category = make(Category)
-        #new_location = make(Location)
-        #
-        #data = {'location': new_location.pk, 'category': new_category.pk, 
-        #'description': "test", 'username': "", 'first_name': "", 
-        #'last_name': "", 'email': ""}
-        
+                
         with patch("its.items.views.CheckInForm.is_valid", return_value=True):
             with patch("its.items.views.CheckInForm.save", return_value=Mock(pk=123)) as save:
                 data = {"foo": "bar"}
@@ -79,6 +113,11 @@ class CheckInTest(TestCase):
 
 
     def test_invalid_post(self):
+    
+        """
+        Tests that the view sends the user back to the checkin page if 
+        """
+    
         user = create_user()
         self.client.login(username=user.username, password="password")
 
@@ -92,10 +131,20 @@ class ItemlistTest(TestCase):
     fixtures = ["actions.json"]
     
     def test_login_required(self):
+        
+        """
+        Tests that the view sends the unauthenticated user to the login page.
+        """
+    
         response = self.client.get(reverse("itemlist"))
         self.assertRedirects(response, reverse("login") + "?next=/items/itemlist", target_status_code=302)
         
     def test_initial_get(self):
+    
+        """
+        Tests that the view sends an authenticated user to the correct page.
+        """
+    
         user = create_user()
         self.client.login(username=user.username, password="password")
         
@@ -103,6 +152,12 @@ class ItemlistTest(TestCase):
         self.assertEqual(200, response.status_code)
         
     def test_filter_get(self):
+    
+        """
+        Tests that the view directs the user to a page with the correct item
+        information after a filtering event. 
+        """
+    
         user = create_user()
         self.client.login(username=user.username, password="password")
         
@@ -122,10 +177,21 @@ class ItemlistTest(TestCase):
 class AdminActionTest(TestCase):
     
     def test_login_required(self):
+    
+        """
+        Tests that the view sends the unauthenticated user to the login page.
+        """
+    
         response = self.client.get(reverse("admin-action", args=[1]))
         self.assertRedirects(response, reverse("login") + "?next=/items/admin-action/1/", target_status_code=302)
 
     def test_get(self):
+    
+        """
+        Tests that the view returns a page with the orrect item information
+        when a staff member goes to it.
+        """
+    
         user = create_staff()
         self.client.login(username=user.username, password="password")
         
@@ -139,10 +205,20 @@ class AdminActionTest(TestCase):
 class AdminItemlistTest(TestCase):
     
     def test_staff_required(self):
+    
+        """
+        Tests that the view sends unauthenticated users to the login page.
+        """
+    
         response = self.client.get(reverse('admin-itemlist'))
         self.assertRedirects(response, reverse("login") + "?next=/items/admin-itemlist", target_status_code=302)
     
     def test_initial_get(self):
+        
+        """
+        Tests that the initial retrieval of the page is correct
+        """
+ 
         user = create_staff()
         self.client.login(username=user.username, password="password")
         
@@ -150,6 +226,12 @@ class AdminItemlistTest(TestCase):
         self.assertEqual(200, response.status_code)
         
     def test_blank_post(self):
+    
+        """
+        Tests that the view returns the user to the admin itemlist page
+        when a blank post request is made.
+        """
+    
         user = create_staff()
         self.client.login(username=user.username, password="password")
         
@@ -157,6 +239,11 @@ class AdminItemlistTest(TestCase):
         self.assertRedirects(request, reverse("admin-itemlist"))
      
     def test_valid_archive_post(self):
+        
+        """
+        Tests that the view returns the user to the admin itemlist page
+        when the form is valid. 
+        """      
         
         user = create_staff()
         self.client.login(username=user.username, password="password")
@@ -169,6 +256,11 @@ class AdminItemlistTest(TestCase):
                 self.assertRedirects(request, reverse("admin-itemlist"))
                 
     def test_invalid_archive_post(self):
+        
+        """
+        Tests that the view returns the user to the admin itemlist page
+        when the form does not validate. 
+        """
         
         user = create_staff()
         self.client.login(username=user.username, password="password")
@@ -197,6 +289,12 @@ class AdminItemlistTest(TestCase):
         
 class CheckInFormTest(TestCase):
     def test_clean_errors(self):
+    
+        """
+        Tests that the clean method does return errors when
+        the form is filled out correctly.
+        """
+    
         data = {
             "possible_owner_found": "1",
             "first_name": "",
@@ -215,6 +313,13 @@ class CheckInFormTest(TestCase):
                     add_error.assert_any_call_with("username", "Invalid username, enter a valid username or leave blank.")
      
     def test_clean_no_errors(self):
+        
+        """
+        Tests that the clean method does not return errors when
+        the form is filled out correctly.
+        """
+    
+    
         data = {
             "possible_owner_found": "1",
             "first_name": "Test",
@@ -233,6 +338,11 @@ class CheckInFormTest(TestCase):
                 self.assertTrue(cleaned_data['email'] == 'test@test.com')
     
     def test_save_new_user(self):
+        
+        """
+        Tests to make sure that the save method creates a new user when it
+        does not already exist in the database.
+        """
         
         fixtures = ["actions.json"]
         
@@ -272,6 +382,10 @@ class CheckInFormTest(TestCase):
  
     def test_save_old_user(self):
         
+        """
+        Tests the save method to make sure it does not create a new user
+        when the user already exists in the database.
+        """
         fixtures = ["actions.json"]
         
         new_item = make(Item)
