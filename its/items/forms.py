@@ -306,7 +306,6 @@ class CheckInForm(ModelForm):
             'description': item.description           
         }
         
-
         message = render_to_string('items/checkin_email.txt', ctx)
 
         EmailMessage(subject, message, to=to, from_email=from_email).send()
@@ -326,8 +325,15 @@ class CheckInForm(ModelForm):
             'found_in': item.location.name,           
         }
         
-        message = render_to_string('items/user_checkin_email.txt', ctx)
-
+        if item.category.machine_name == Category.USB:
+            message = render_to_string('items/user_checkin_email_usb.txt', ctx)
+        
+        elif item.category.machine_name == Category.ID:
+            message = render_to_string('items/user_checkin_email_id.txt', ctx)               
+        
+        else:
+            message = render_to_string('items/user_checkin_email_all_other.txt', ctx)
+ 
         EmailMessage(subject, message, to=to, from_email=from_email).send()
 	
     
