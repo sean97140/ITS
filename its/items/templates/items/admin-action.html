@@ -35,11 +35,20 @@
         </table>
     </div>
     <form action="" method="post" class="col-md-6">
-        <h3>Perform an Action</h3>
+        
+        {% if user.is_staff %}
+            <h3>Perform an Action</h3>
+        {% else %}
+            <h3>Return this item</h3>
+        {% endif %}
         {% csrf_token %}
-        {{ form.action_choice|bootstrap }}
+        {% if user.is_staff %}
+            {{ form.action_choice|bootstrap }}
+        {% else %}
+            {{ form.action_choice.as_hidden }}
+        {% endif %}
         {{ form.note|bootstrap  }}
-        <div class="returnFields" style="{% if not action_choice.data %}display:none{% endif %}">
+        <div class="returnFields" style="{% if not form.action_choice.data %}display:none{% endif %}">
             <legend>Enter the owner's name as it appears on their photo ID, as well as their email address.</legend>
             {{ form.first_name|bootstrap }}
             {{ form.last_name|bootstrap }}
