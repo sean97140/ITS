@@ -113,7 +113,7 @@ LDAP = {
     },
     'groups': {
                 'host': variable("AD_SERVER", default="ldaps://oitdcpsu02.psu.ds.pdx.edu"),
-                'username': variable("AD_USERNAME", default="cn=pbt,ou=people,dc=psu,dc=ds,dc=pdx,dc=edu"),
+                'username': variable("AD_USERNAME", default="lostandfound_svc"),
                 'password': variable("AD_PASSWORD", default=''),
                 'search_dn': variable("AD_SEARCH_BASE", default="ou=people,dc=psu,dc=ds,dc=pdx,dc=edu"),
     }
