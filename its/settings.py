@@ -37,7 +37,7 @@ CHECKOUT_EMAIL_FROM = 'lost_found_admin@pdx.edu'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': variable("DB_NAME", default="ITS"),
+        'NAME': variable("DB_NAME", default="its"),
         # the default is fine for dev
         'USER': variable("DB_USER", default='root'),
         # the default is fine for dev
@@ -110,6 +110,12 @@ LDAP = {
                 'search_dn': variable("LDAP_SEARCH_DB", default='ou=people,dc=pdx,dc=edu'),
                 'tls': variable('LDAP_TLS', default=True),
                 'ca_file': PROJECT_DIR('ca.crt'),
+    },
+    'groups': {
+                'host': variable("AD_SERVER", default="ldaps://oitdcpsu02.psu.ds.pdx.edu"),
+                'username': variable("AD_USERNAME", default="cn=pbt,ou=people,dc=psu,dc=ds,dc=pdx,dc=edu"),
+                'password': variable("AD_PASSWORD", default=''),
+                'search_dn': variable("AD_SEARCH_BASE", default="ou=people,dc=psu,dc=ds,dc=pdx,dc=edu"),
     }
 }
 
