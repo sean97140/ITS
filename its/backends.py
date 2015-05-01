@@ -6,9 +6,14 @@ import re
 
 class ITSBackend(CASBackend):   
 
+    """
+    Custom backend, allows for use of CAS and AD user lookups.
+    """
+
+
     #Override
     def get_or_init_user(self, username):
-    
+
         query = "(cn=" + username + ")"
         results = ldapsearch(query, using='groups')
         
