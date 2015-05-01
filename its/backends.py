@@ -1,45 +1,32 @@
 from djangocas.backends import CASBackend
 from django.contrib.auth import get_user_model
-from arcutils.ldap import ldapsearch
-import arcutils.ldap
+from arcutils.ldap import ldapsearch, parse_profile
+from its.items.forms import create_user
 import re
 
 class ITSBackend(CASBackend):   
 
-    def create_user(new_first_name, new_last_name, new_email):
-
-        """
-        Generates a unique user name.
-        """
-    
-        new_username = '_' + new_first_name + new_last_name
-        i = 0
-            
-        while User.objects.filter(username=new_username + str(i)).exists():
-            i += 1
-                
-        new_username = new_username + str(i)                 
-        new_user = User(first_name = new_first_name, last_name = new_last_name, 
-        email = new_email, username = new_username, is_active=False, is_staff=False)
-                
-        new_user.save()
-    
-        return new_user
-
     #Override
     def get_or_init_user(self, username):
-        query = "(cn=" + username + ")"
     
+        query = "(cn=" + username + ")"
         results = ldapsearch(query, using='groups')
+        
+        # Get the list of groups that the user belongs too.
         memberOf = results[0][1]['memberOf']
-        first_name = str(results[0][1]['givenName'])
-        last_name = str(results[0][1]['sn'])
-        email = str(results[0][1]['mail'])
+        
+        # Add the username as a list for the uid dictionary key.
+        results[0][1]['uid'] = [username]
+        
+        user_info = parse_profile(results[0][1])
+        first_name = user_info['first_name']
+        last_name = user_info['last_name']
+        email = user_info['email']
         
         staff = False
         student = False
         
-        if re.search("(CN=ITS_CAVS_Staff_GG)", str(memberOf)):
+        if re.search("(CN=ITS_LAB_Students_GG)", str(memberOf)):
             student = True
         
         if re.search("(CN=ITS_CAVS_Staff_GG)", str(memberOf)):
