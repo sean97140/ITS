@@ -1,4 +1,4 @@
-/variables.py
+variables.py
 *.pyc
 .env
 media/*
