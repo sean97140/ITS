@@ -1,6 +1,6 @@
 from djangocas.backends import CASBackend
 from django.contrib.auth import get_user_model
-from arcutils.ldap import ldapsearch, parse_profile
+from arcutils.ldap import ldapsearch, parse_profile, escape
 from its.items.forms import create_user
 import re
 
@@ -13,7 +13,8 @@ class ITSBackend(CASBackend):
 
     #Override
     def get_or_init_user(self, username):
-
+        
+        username = escape(username)
         query = "(cn=" + username + ")"
         results = ldapsearch(query, using='groups')
         
@@ -54,18 +55,9 @@ class ITSBackend(CASBackend):
             
             # Always need to reset the users permissions, to stay up to date with
             # group changes.
-            user.is_active = False
-            user.is_staff = False
+            user.is_active = True
+            user.is_staff = staff
             user.save()
-            
-            if staff:
-                user.is_active = True
-                user.is_staff = True
-                user.save()
-            
-            if student:
-                user.is_active = True
-                user.save()
         
             return user
          
