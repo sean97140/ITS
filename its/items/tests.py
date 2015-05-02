@@ -1,5 +1,6 @@
 from django.test import TestCase, RequestFactory
 from django.core.urlresolvers import reverse
+from django.core import mail
 from model_mommy.mommy import make
 from its.users.models import User
 from its.items.models import Item, Location, Category, Action, Status
@@ -421,7 +422,164 @@ class CheckInFormTest(TestCase):
             
                 self.assertTrue(original_num_users == User.objects.all().count())
 
+    def test_save_no_email(self):
+        
+        fixtures = ["actions.json"]
+        
+        new_item = make(Item, is_valuable=False)
+        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_status = make(Status, action_taken=new_action, item=new_item)
+        new_category = make(Category)
+        new_location = make(Location)
+        
+        data = {
+                'location': new_location,
+                'category': new_category,
+                'description': new_item.description,
+                'is_valuable' : new_item.is_valuable,
+                'username': "",
+                'possible_owner_contacted': False,
+                'possible_owner_found': False,
+                'first_name': "",
+                'last_name': "",
+                'email': "",
+        }
+        
+        user = create_user()
 
+        with patch('its.items.forms.CheckInForm.clean', return_value=data) as m:
+            form = CheckInForm(data)
+            form.cleaned_data = data
+            with patch("its.items.forms.ModelForm.save", return_value=new_item) as save:
+                form.save(current_user=user)
+
+                self.assertEquals(len(mail.outbox), 0)  
+
+                
+    def test_save_user_email(self):
+        
+        fixtures = ["actions.json"]
+        
+        new_item = make(Item, is_valuable=False)
+        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_status = make(Status, action_taken=new_action, item=new_item)
+        new_category = make(Category)
+        new_location = make(Location)
+        
+        data = {
+                'location': new_location,
+                'category': new_category,
+                'description': new_item.description,
+                'is_valuable' : new_item.is_valuable,
+                'username': "",
+                'possible_owner_contacted': True,
+                'possible_owner_found': True,
+                'first_name': "test",
+                'last_name': "test",
+                'email': "test@test.com",
+        }
+        
+        user = create_user()
+       
+        with patch('its.items.forms.CheckInForm.clean', return_value=data) as m:
+            form = CheckInForm(data)
+            form.cleaned_data = data
+            with patch("its.items.forms.ModelForm.save", return_value=new_item) as save:
+                form.save(current_user=user)
+
+                self.assertEquals(len(mail.outbox), 1)
+                self.assertEquals(mail.outbox[0].subject, 'An item belonging to you was found')
+                
+    def test_save_staff_and_user_email(self):
+        
+        fixtures = ["actions.json"]
+        
+        new_item = make(Item, is_valuable=True)
+        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_status = make(Status, action_taken=new_action, item=new_item)
+        new_category = make(Category)
+        new_location = make(Location)
+        
+        data = {
+                'location': new_location,
+                'category': new_category,
+                'description': new_item.description,
+                'is_valuable' : new_item.is_valuable,
+                'username': "",
+                'possible_owner_contacted': True,
+                'possible_owner_found': True,
+                'first_name': "test",
+                'last_name': "test",
+                'email': "test@test.com",
+        }
+        
+        user = create_user()
+        
+        with patch('its.items.forms.CheckInForm.clean', return_value=data) as m:
+            form = CheckInForm(data)
+            form.cleaned_data = data
+            with patch("its.items.forms.ModelForm.save", return_value=new_item) as save:
+                form.save(current_user=user)
+
+                self.assertEquals(len(mail.outbox), 2)
+                self.assertEquals(mail.outbox[0].subject, 'An item belonging to you was found')
+                self.assertEquals(mail.outbox[1].subject, 'Valuable item checked in')
+    
+class ItemArchiveFormTest(TestCase):
+
+    
+    # Probably should be using patch on both of the below functions... will rework. 
+    
+    def test_init(self):
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        new_item = make(Item)        
+        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_status = make(Status, action_taken=new_action, item=new_item)
+        new_category = make(Category)
+        new_location = make(Location)
+    
+        item_filter_form = AdminItemFilterForm(None)
+        item_list = item_filter_form.filter()
+        
+        request = self.client.post(reverse("admin-itemlist"))
+        
+        archive_key = 'archive-' + str(new_item.pk) 
+        
+        item_archive_form = ItemArchiveForm(request, item_list=item_list)
+        self.assertTrue(item_archive_form.fields[archive_key])
+
+    def test_save(self):
+    
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        new_item = make(Item, is_archived=False)        
+        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_status = make(Status, action_taken=new_action, item=new_item)
+        new_category = make(Category)
+        new_location = make(Location)
+    
+        item_filter_form = AdminItemFilterForm(None)
+        item_list = item_filter_form.filter()
+        
+        request = self.client.post(reverse("admin-itemlist"))
+        
+        archive_key = 'archive-' + str(new_item.pk) 
+        
+        item_archive_form = ItemArchiveForm(request, item_list=item_list)
+        
+        if item_archive_form.is_valid():
+            item_archive_form.cleaned_data[archive_key] = True
+            item_archive_form.save()
+        
+        new_item = Item.objects.get(pk=new_item.pk)
+        self.assertTrue(new_item.is_archived)
+
+        
+    
+    
 ## Create your tests here.
 #class ItemsTest(TestCase):
 #    
