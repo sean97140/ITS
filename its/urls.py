@@ -14,10 +14,10 @@ urlpatterns = patterns(
     # url(r'^blog/', include('blog.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', home, name='home'),
+    url(r'^home$', home, name='home'),
     url(r'^items/admin-action/(?P<item_num>\d+)/$', items.adminaction, name='admin-action'),
+    url(r'^$', items.checkin, name='index'),
     url(r'^items/checkin$', items.checkin, name='checkin'),
-	url(r'^items/checkin$', items.checkin, name='index'),
     url(r'^items/admin-itemlist$', items.admin_itemlist, name='admin-itemlist'),
     url(r'^items/itemlist$', items.itemlist, name='itemlist'),
     url(r'^items/autocomplete/?$', items.autocomplete, name='users-autocomplete'),

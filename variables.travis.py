@@ -38,3 +38,19 @@ LDAP_PASSWORD = ''
 LDAP_SEARCH_DB = 'ou=people,dc=pdx,dc=edu'
 
 LDAP_TLS = True
+
+DB_NAME = 'its'
+
+AD_SERVER = "ldaps://oitdcpsu02.psu.ds.pdx.edu"
+
+AD_AUTO_BIND = True
+
+AD_USERNAME = "travis"
+
+AD_PASSWORD = ''
+
+AD_LAZY = True
+
+AD_SEARCH_BASE = "ou=people,dc=psu,dc=ds,dc=pdx,dc=edu"
+
+
