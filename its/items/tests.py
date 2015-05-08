@@ -527,7 +527,6 @@ class CheckInFormTest(TestCase):
     
 class ItemArchiveFormTest(TestCase):
 
-    
     # Probably should be using patch on both of the below functions... will rework. 
     
     def test_init(self):
@@ -570,14 +569,92 @@ class ItemArchiveFormTest(TestCase):
         
         item_archive_form = ItemArchiveForm(request, item_list=item_list)
         
-        if item_archive_form.is_valid():
-            item_archive_form.cleaned_data[archive_key] = True
-            item_archive_form.save()
+        self.assertTrue(item_archive_form.is_valid())
+        item_archive_form.cleaned_data[archive_key] = True
+        item_archive_form.save()
         
         new_item = Item.objects.get(pk=new_item.pk)
         self.assertTrue(new_item.is_archived)
 
+    def test_iter(self):
         
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        new_item = make(Item, is_archived=False)        
+        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_status = make(Status, action_taken=new_action, item=new_item)
+        new_category = make(Category)
+        new_location = make(Location)
+        
+        request = self.client.post(reverse("admin-itemlist"))
+        
+        item_filter_form = AdminItemFilterForm(None)
+        item_list = item_filter_form.filter()
+        
+        request = self.client.get(reverse("admin-itemlist"))
+        
+        expected_text = "archive-" + str(new_item.pk) 
+        self.assertContains(request, expected_text, status_code = 200, html = False)
+
+class AdminItemFilterFormTest(TestCase):
+
+    def test_filter(self):
+        user = create_staff()
+        self.client.login(username=user.username, password="password")
+        
+        new_category = make(Category)
+        new_location = make(Location)
+        new_item = make(Item, is_archived=False, is_valuable=True, category=new_category, location=new_location)        
+        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_status = make(Status, action_taken=new_action, item=new_item)
+        
+        data = {
+                'select_items': "valuable",
+                'select_location': new_location.pk,
+                'select_category': new_category.pk,
+                'search_keyword_or_name': new_item.description,
+        }
+        
+        request = self.client.get(reverse("admin-itemlist"), data)
+        
+        item_filter_form = AdminItemFilterForm(request)
+        item_list = item_filter_form.filter()
+        
+        values = item_list.values()
+        
+        self.assertEqual(values.get()['item_id'], new_item.pk)
+        
+        # Test 2
+        
+        new_item = make(Item, is_archived=True, is_valuable=True, category=new_category, location=new_location)    
+        
+        data = {
+                'select_items': "archived",
+                'select_location': new_location.pk,
+                'select_category': new_category.pk,
+                'search_keyword_or_name': new_item.description,
+        }
+                
+        request = self.client.get(reverse("admin-itemlist"), data)
+        item_filter_form = AdminItemFilterForm(request)
+        self.assertTrue(item_filter_form.is_valid())
+        item_list = item_filter_form.filter()    
+        values = item_list.values()
+        #import pdb; pdb.set_trace()
+        self.assertEqual(values.get()['item_id'], new_item.pk)
+        
+
+class ItemFilterFormTest(TestCase):
+
+
+
+
+    def test_filter(self):
+        stuff = "stuff"
+        
+
+    
     
     
 ## Create your tests here.
