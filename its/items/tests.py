@@ -526,9 +526,7 @@ class CheckInFormTest(TestCase):
                 self.assertEquals(mail.outbox[1].subject, 'Valuable item checked in')
     
 class ItemArchiveFormTest(TestCase):
-
-    # Probably should be using patch on both of the below functions... will rework. 
-    
+   
     def test_init(self):
         user = create_staff()
         self.client.login(username=user.username, password="password")
@@ -597,6 +595,7 @@ class ItemArchiveFormTest(TestCase):
         expected_text = "archive-" + str(new_item.pk) 
         self.assertContains(request, expected_text, status_code = 200, html = False)
 
+        
 class AdminItemFilterFormTest(TestCase):
 
     def test_filter(self):
@@ -605,53 +604,88 @@ class AdminItemFilterFormTest(TestCase):
         
         new_category = make(Category)
         new_location = make(Location)
-        new_item = make(Item, is_archived=False, is_valuable=True, category=new_category, location=new_location)        
+        
+        # Test 1 - Valuable item
+        
+        new_item1 = make(Item, is_archived=False, is_valuable=True, category=new_category, location=new_location)        
         new_action = make(Action, machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item)
+        new_status = make(Status, action_taken=new_action, item=new_item1)
         
         data = {
                 'select_items': "valuable",
-                'select_location': new_location.pk,
-                'select_category': new_category.pk,
-                'search_keyword_or_name': new_item.description,
+                'select_location': new_location.name,
+                'select_category': new_category.name,
+                'search_keyword_or_name': new_item1.description,
+                'sort_by': '',
         }
-        
-        request = self.client.get(reverse("admin-itemlist"), data)
-        
-        item_filter_form = AdminItemFilterForm(request)
+              
+        item_filter_form = AdminItemFilterForm(data)
         item_list = item_filter_form.filter()
         
         values = item_list.values()
         
-        self.assertEqual(values.get()['item_id'], new_item.pk)
+        self.assertEqual(values.get()['item_id'], new_item1.pk)
         
-        # Test 2
+        # Test 2 - Archived item
         
-        new_item = make(Item, is_archived=True, is_valuable=True, category=new_category, location=new_location)    
+        new_item2 = make(Item, is_archived=True, is_valuable=True, category=new_category, location=new_location)    
         
         data = {
                 'select_items': "archived",
-                'select_location': new_location.pk,
-                'select_category': new_category.pk,
-                'search_keyword_or_name': new_item.description,
+                'select_location': new_location.name,
+                'select_category': new_category.name,
+                'search_keyword_or_name': new_item2.description,
+                'sort_by': '',
         }
-                
-        request = self.client.get(reverse("admin-itemlist"), data)
-        item_filter_form = AdminItemFilterForm(request)
-        self.assertTrue(item_filter_form.is_valid())
-        item_list = item_filter_form.filter()    
-        values = item_list.values()
-        #import pdb; pdb.set_trace()
-        self.assertEqual(values.get()['item_id'], new_item.pk)
+                       
+        with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True) as m:
+            item_filter_form = AdminItemFilterForm(data)
+            item_filter_form.cleaned_data = data
+            item_list = item_filter_form.filter()    
+            values = item_list.values()
+
+            self.assertEqual(values.get()['item_id'], new_item2.pk)
         
+   
+        #Test 3 - not valuable, not archived item
+        new_item3 = make(Item, is_archived=False, is_valuable=False, category=new_category, location=new_location)    
+  
+        data = {
+                'select_items': "",
+                'select_location': new_location.name,
+                'select_category': new_category.name,
+                'search_keyword_or_name': new_item3.description,
+                'sort_by': '',
+        }
+        
+        with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True) as m:
+            item_filter_form = AdminItemFilterForm(data)
+            item_filter_form.cleaned_data = data
+            item_list = item_filter_form.filter()    
+            values = item_list.values()
 
-class ItemFilterFormTest(TestCase):
-
-
-
-
-    def test_filter(self):
-        stuff = "stuff"
+            self.assertEqual(values.get()['item_id'], new_item3.pk)
+        
+        #Test 4 - test item sorting
+        new_item4 = make(Item, is_archived=False, is_valuable=False, category=new_category, location=new_location)    
+  
+        data = {
+                'select_items': "",
+                'select_location': new_location.name,
+                'select_category': new_category.name,
+                'search_keyword_or_name': '',
+                'sort_by': 'pk',
+        }
+        
+        with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True) as m:
+            item_filter_form = AdminItemFilterForm(data)
+            item_filter_form.cleaned_data = data
+            item_list = item_filter_form.filter()    
+            values = item_list.values()
+            
+            self.assertLess(values[0]['item_id'], values[1]['item_id']) 
+            self.assertLess(values[1]['item_id'], values[2]['item_id']) 
+        
         
 
     
