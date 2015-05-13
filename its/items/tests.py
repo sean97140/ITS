@@ -271,24 +271,12 @@ class AdminItemlistTest(TestCase):
                 
                 request = self.client.post(reverse("admin-itemlist"), form)
                 self.assertEqual(200, request.status_code)
-                
-        #new_item = make(Item)
-        #new_status = make(Status, item=new_item)
-        #form = {'action': 'Archive selected items', 
-        #        'archive-' + str(new_item.pk): 'on'
-        #        }
-        #request = self.client.post(reverse("admin-itemlist"), data=form)
-        #self.assertRedirects(request, reverse("admin-itemlist"))
-        
-        # new_item was updated, and the reference is now stale, update it.
-        #new_item = Item.objects.get(item_id=new_item.pk)
-        #self.assertEqual(True, new_item.is_archived)
-        
         
         
 # Form tests
         
 class CheckInFormTest(TestCase):
+
     def test_clean_errors(self):
     
         """
@@ -423,6 +411,10 @@ class CheckInFormTest(TestCase):
                 self.assertTrue(original_num_users == User.objects.all().count())
 
     def test_save_no_email(self):
+    
+        """
+        Checks that an email is not sent when a non-valuable item is checked in.
+        """
         
         fixtures = ["actions.json"]
         
@@ -457,6 +449,10 @@ class CheckInFormTest(TestCase):
 
                 
     def test_save_user_email(self):
+    
+        """
+        Checks that an email was sent when a possible owner is indicated.
+        """
         
         fixtures = ["actions.json"]
         
@@ -491,6 +487,11 @@ class CheckInFormTest(TestCase):
                 self.assertEquals(mail.outbox[0].subject, 'An item belonging to you was found')
                 
     def test_save_staff_and_user_email(self):
+    
+        """
+        Checks that an email is sent to the user as well as another to staff when a valuable
+        item is checked in.
+        """
         
         fixtures = ["actions.json"]
         
@@ -524,10 +525,16 @@ class CheckInFormTest(TestCase):
                 self.assertEquals(len(mail.outbox), 2)
                 self.assertEquals(mail.outbox[0].subject, 'An item belonging to you was found')
                 self.assertEquals(mail.outbox[1].subject, 'Valuable item checked in')
-    
+
+                
 class ItemArchiveFormTest(TestCase):
    
     def test_init(self):
+    
+        """
+        Tests that the fields of the form are appended with archive fields.
+        """
+    
         user = create_staff()
         self.client.login(username=user.username, password="password")
         
@@ -548,6 +555,10 @@ class ItemArchiveFormTest(TestCase):
         self.assertTrue(item_archive_form.fields[archive_key])
 
     def test_save(self):
+    
+        """
+        Checks that the archived status of items is updated.
+        """
     
         user = create_staff()
         self.client.login(username=user.username, password="password")
@@ -575,6 +586,10 @@ class ItemArchiveFormTest(TestCase):
         self.assertTrue(new_item.is_archived)
 
     def test_iter(self):
+    
+        """
+        Checks that the iter method updates the requested page with the correct archive fields.
+        """
         
         user = create_staff()
         self.client.login(username=user.username, password="password")
@@ -599,22 +614,30 @@ class ItemArchiveFormTest(TestCase):
 class AdminItemFilterFormTest(TestCase):
 
     def test_filter(self):
-        user = create_staff()
-        self.client.login(username=user.username, password="password")
+    
+        """
+        Test 1 - Checks that valuable items will be displayed when filtering for
+        valuable items. Also Checks that searches based on location and category work.
         
-        new_category = make(Category)
-        new_location = make(Location)
+        Test 2 - Checks that archived items are displayed when filtering for 
+        archived items.
         
-        # Test 1 - Valuable item
+        Test 3 - Checks that a non-valuable and non-archived items are displayed when filtering
+        for non-valuable and non-archived items.
+
+        Test 4 - Checks that items are sorted in the order specified.   
+        """
         
-        new_item1 = make(Item, is_archived=False, is_valuable=True, category=new_category, location=new_location)        
+        # Test 1 - Valuable item / Search on location and category.
+        
+        new_item1 = make(Item, is_archived=False, is_valuable=True)        
         new_action = make(Action, machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item1)
         
         data = {
                 'select_items': "valuable",
-                'select_location': new_location.name,
-                'select_category': new_category.name,
+                'select_location': new_item1.location.name,
+                'select_category': new_item1.category.name,
                 'search_keyword_or_name': new_item1.description,
                 'sort_by': '',
         }
@@ -628,12 +651,12 @@ class AdminItemFilterFormTest(TestCase):
         
         # Test 2 - Archived item
         
-        new_item2 = make(Item, is_archived=True, is_valuable=True, category=new_category, location=new_location)    
+        new_item2 = make(Item, is_archived=True, is_valuable=True)    
         
         data = {
                 'select_items': "archived",
-                'select_location': new_location.name,
-                'select_category': new_category.name,
+                'select_location': None,
+                'select_category': None,
                 'search_keyword_or_name': new_item2.description,
                 'sort_by': '',
         }
@@ -648,12 +671,12 @@ class AdminItemFilterFormTest(TestCase):
         
    
         #Test 3 - not valuable, not archived item
-        new_item3 = make(Item, is_archived=False, is_valuable=False, category=new_category, location=new_location)    
+        new_item3 = make(Item, is_archived=False, is_valuable=False)    
   
         data = {
                 'select_items': "",
-                'select_location': new_location.name,
-                'select_category': new_category.name,
+                'select_location': None,
+                'select_category': None,
                 'search_keyword_or_name': new_item3.description,
                 'sort_by': '',
         }
@@ -667,12 +690,12 @@ class AdminItemFilterFormTest(TestCase):
             self.assertEqual(values.get()['item_id'], new_item3.pk)
         
         #Test 4 - test item sorting
-        new_item4 = make(Item, is_archived=False, is_valuable=False, category=new_category, location=new_location)    
-  
+        new_item4 = make(Item, is_archived=False, is_valuable=False)    
+    
         data = {
                 'select_items': "",
-                'select_location': new_location.name,
-                'select_category': new_category.name,
+                'select_location': None,
+                'select_category': None,
                 'search_keyword_or_name': '',
                 'sort_by': 'pk',
         }
@@ -687,9 +710,193 @@ class AdminItemFilterFormTest(TestCase):
             self.assertLess(values[1]['item_id'], values[2]['item_id']) 
         
         
+class ItemFilterFormTest (TestCase):
 
+    def test_filter(self):
+        
+        """
+        Check that the filter displays only items with status of "Checked in"
+        """
+        
+        
+        new_item1 = make(Item, is_archived=False, is_valuable=False)        
+        new_action1 = make(Action, machine_name=Action.CHECKED_IN)
+        new_status1 = make(Status, action_taken=new_action1, item=new_item1)
+ 
+        new_item2 = make(Item, is_archived=True, is_valuable=False)    
+        new_action2 = make(Action, machine_name=Action.RETURNED)
+        new_status2 = make(Status, action_taken=new_action2, item=new_item2)
+ 
+        data = {
+                 'select_items': "",
+                 'select_location': None,
+                 'select_category': None,
+                 'search_keyword_or_name': "",
+                 'sort_by': 'pk',
+        }
+
+        item_filter_form = ItemFilterForm(data)
+        item_list = item_filter_form.filter()
+        values = item_list.values()
+        
+        self.assertEqual(values[0]['item_id'], new_item1.pk)
+        self.assertEqual(len(values), 1)
+ 
+ 
+class AdminActionFormTest (TestCase):
     
+    fixtures = ["actions.json"]
     
+    def test_init (self):
+        
+        """
+        Test 1 - Check that regular student lab attendants only have the return option
+        Test 2 - Check that staff have all admin options available to them.
+        """
+        
+        # Test 1 - Lab attendant user
+
+        user = create_user()
+        
+        form = AdminActionForm(user=user)
+        self.assertEqual(form.fields['action_choice'].queryset[0].machine_name, Action.RETURNED)
+        self.assertEqual(len(form.fields['action_choice'].queryset), 1)
+        
+        # Test 2 - Staff user
+        
+        user = create_staff()
+        total_actions = len(Action.objects.all())
+        
+        form = AdminActionForm(user=user)
+        self.assertEqual(len(form.fields['action_choice'].queryset), total_actions)
+    
+
+    def test_checkout_email (self):
+        
+        """
+        Check that an email is sent to the staff when a valuable
+        item is returned.
+        """
+        user = create_staff()
+   
+        new_item = make(Item, is_valuable=True)
+        new_action = Action.objects.get(machine_name=Action.RETURNED)
+        
+        data = {
+                 'action_choice': new_action,
+                 'note': "",
+                 'first_name': 'abcd',
+                 'last_name': '1234',
+                 'email': 'test@test.com',
+        }
+        
+        with patch('its.items.forms.AdminActionForm.is_valid', return_value=True) as m:
+            form = AdminActionForm(data, user=user)
+            form.cleaned_data = data
+            form.save(item_pk = new_item.pk, current_user=user)
+            
+            self.assertEquals(len(mail.outbox), 1)
+            self.assertEquals(mail.outbox[0].subject, 'Valuable item checked out')
+
+ 
+    def test_clean_with_errors (self):
+        
+        """
+        Test 1 - Check that errors appear when returning item with bad data.
+        Test 2 - Check that errors appear when performing other action with bad data.
+        """
+        
+        
+        # Test 1 - Check for errors when returning item.
+        user = create_staff()
+   
+        new_item = make(Item, is_valuable=True)
+        new_action = Action.objects.get(machine_name=Action.RETURNED)
+      
+        data = {
+                 'action_choice': new_action,
+                 'note': "",
+                 'first_name': "",
+                 'last_name': "",
+                 'email': "",
+        }
+        
+        with patch('its.items.forms.AdminActionForm.clean', return_value=data) as m:
+                with patch("its.items.forms.AdminActionForm.add_error") as add_error:
+                    form = AdminActionForm(data, user=user)
+                    form.clean()
+                    
+                    add_error.assert_any_call_with("first_name", "First name is required when returning item.")
+                    add_error.assert_any_call_with("last_name", "Last name is required when returning item.")
+                    add_error.assert_any_call_with("email", "Email is required when returning item.")
+
+        # Test 2 - Check for errors when selecting other action.
+        
+        new_action = Action.objects.get(machine_name=Action.OTHER)
+      
+        data = {
+                 'action_choice': new_action,
+                 'note': "",
+                 'first_name': "",
+                 'last_name': "",
+                 'email': "",
+        }
+
+        with patch('its.items.forms.AdminActionForm.clean', return_value=data) as m:
+                with patch("its.items.forms.AdminActionForm.add_error") as add_error:
+                    form = AdminActionForm(data, user=user)
+                    form.clean()
+                    
+                    add_error.assert_any_call_with("note", "Note required when choosing action of type Other.")
+        
+       
+        
+    def test_clean_no_errors (self):
+        
+        """
+        Test 1 - Check that no errors appear when returning an item with correct data.
+        Test 2 - Check that no errors appear when performing other action with correct data.
+        """
+        
+        # Test 1 - Check for no errors when returning item.
+        user = create_staff()
+   
+        new_item = make(Item, is_valuable=True)
+        new_action = Action.objects.get(machine_name=Action.RETURNED)
+      
+        data = {
+                 'action_choice': new_action,
+                 'note': "",
+                 'first_name': "abcd",
+                 'last_name': "1234",
+                 'email': "test@test.com",
+        }
+        
+        with patch('its.items.forms.AdminActionForm.clean', return_value=data) as m:
+            form = AdminActionForm(data, user=user)
+            cleaned_data = form.clean()
+                    
+            self.assertTrue(cleaned_data['first_name'] == data['first_name'])
+            self.assertTrue(cleaned_data['last_name'] == data['last_name'])
+            self.assertTrue(cleaned_data['email'] == data['email'])
+
+        # Test 2 - Check for no errors when performing other action.
+        new_action = Action.objects.get(machine_name=Action.OTHER)
+      
+        data = {
+                 'action_choice': new_action,
+                 'note': "test",
+                 'first_name': "",
+                 'last_name': "",
+                 'email': "",
+        }
+        
+        with patch('its.items.forms.AdminActionForm.clean', return_value=data) as m:
+            form = AdminActionForm(data, user=user)
+            cleaned_data = form.clean()
+                    
+            self.assertTrue(cleaned_data['note'] == data['note'])
+        
     
 ## Create your tests here.
 #class ItemsTest(TestCase):
