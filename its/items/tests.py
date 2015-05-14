@@ -4,7 +4,7 @@ from django.core import mail
 from model_mommy.mommy import make
 from its.users.models import User
 from its.items.models import Item, Location, Category, Action, Status
-from its.items.forms import AdminActionForm, AdminItemFilterForm, ItemFilterForm, ItemArchiveForm, CheckInForm
+from its.items.forms import AdminActionForm, AdminItemFilterForm, ItemFilterForm, ItemArchiveForm, CheckInForm, check_ldap
 from its.items.views import admin_itemlist, adminaction, itemlist, checkin, printoff
 from unittest.mock import patch, Mock
 
@@ -874,11 +874,11 @@ class AdminActionFormTest (TestCase):
         
         with patch('its.items.forms.AdminActionForm.clean', return_value=data) as m:
             form = AdminActionForm(data, user=user)
-            cleaned_data = form.clean()
+            form.cleaned_data = form.clean()
                     
-            self.assertTrue(cleaned_data['first_name'] == data['first_name'])
-            self.assertTrue(cleaned_data['last_name'] == data['last_name'])
-            self.assertTrue(cleaned_data['email'] == data['email'])
+            self.assertTrue(form.cleaned_data['first_name'] == data['first_name'])
+            self.assertTrue(form.cleaned_data['last_name'] == data['last_name'])
+            self.assertTrue(form.cleaned_data['email'] == data['email'])
 
         # Test 2 - Check for no errors when performing other action.
         new_action = Action.objects.get(machine_name=Action.OTHER)
@@ -893,11 +893,172 @@ class AdminActionFormTest (TestCase):
         
         with patch('its.items.forms.AdminActionForm.clean', return_value=data) as m:
             form = AdminActionForm(data, user=user)
-            cleaned_data = form.clean()
+            form.cleaned_data = form.clean()
                     
-            self.assertTrue(cleaned_data['note'] == data['note'])
-        
+            self.assertTrue(form.cleaned_data['note'] == data['note'])
     
+    
+    def test_setup(self):
+    
+        """
+        Test 1 - Check that the returned to field is set to None when an item
+        has it's status set back to checked in
+        
+        Test 2 - Check that the returned to field is correctly set when an item
+        is returned to it's owner.
+        
+        Test 3 Check that an email is sent to the staff mailing list
+        when a valuable item is returned to it's owner.
+        
+        Test 4 check that a new user is made when an item is returned and that
+        person did not exist in the system previously.
+
+        Test 5 Check that an existing user does not have an account created when
+        an item is returned to them.
+        """
+        
+        # Test 1 Check that the returned to field is set to None when an item
+        # has it's status set back to checked in
+        
+        user = create_staff()
+   
+        new_item = make(Item, is_valuable=False)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
+      
+        data = {
+                 'action_choice': new_action,
+                 'note': "",
+                 'first_name': "",
+                 'last_name': "",
+                 'email': "",
+        }
+        
+        with patch('its.items.forms.AdminActionForm.is_valid', return_value=True) as m:
+            with patch('its.items.forms.AdminActionForm.clean', return_value=data) as clean:
+                
+                form = AdminActionForm(data, user=user)
+                form.cleaned_data = form.clean()
+                form.save(item_pk=new_item.pk, current_user=user)
+                new_item = Item.objects.get(pk=new_item.pk)
+                self.assertIsNone(new_item.returned_to)
+        
+        # Test 2 Check that the returned to field is correctly set when an item
+        # is returned to it's owner.
+        new_action = Action.objects.get(machine_name=Action.RETURNED)
+
+        data = {
+                 'action_choice': new_action,
+                 'note': "",
+                 'first_name': "abcd",
+                 'last_name': "1234",
+                 'email': "test@test.com",
+        }
+        
+        with patch('its.items.forms.AdminActionForm.is_valid', return_value=True) as m:
+            with patch('its.items.forms.AdminActionForm.clean', return_value=data) as clean:
+                
+                form = AdminActionForm(data, user=user)
+                form.cleaned_data = form.clean()
+                form.save(item_pk=new_item.pk, current_user=user)
+                new_item = Item.objects.get(pk=new_item.pk)
+                self.assertIsNotNone(new_item.returned_to)
+        
+        # Test 3 Check that an email is sent to the staff mailing list
+        # when a valuable item is returned to it's owner.
+        
+        new_item = make(Item, is_valuable=True)
+
+        data = {
+                 'action_choice': new_action,
+                 'note': "",
+                 'first_name': "abcd",
+                 'last_name': "1234",
+                 'email': "test@test.com",
+        }
+        
+        with patch('its.items.forms.AdminActionForm.is_valid', return_value=True) as m:
+            with patch('its.items.forms.AdminActionForm.clean', return_value=data) as clean:
+                
+                form = AdminActionForm(data, user=user)
+                form.cleaned_data = form.clean()
+                form.save(item_pk=new_item.pk, current_user=user)
+
+                self.assertEquals(len(mail.outbox), 1)
+                self.assertEquals(mail.outbox[0].subject, 'Valuable item checked out')
+
+        # Test 4 check that a new user is made when an item is returned and that
+        # person did not exist in the system previously.
+
+        data = {
+                 'action_choice': new_action,
+                 'note': "",
+                 'first_name': "test",
+                 'last_name': "1234",
+                 'email': "test@test.com",
+        }
+        
+        try:
+            user_search = User.objects.get(first_name=data["first_name"])
+        except User.DoesNotExist:
+            user_search = None
+        
+        self.assertIsNone(user_search)
+        
+        with patch('its.items.forms.AdminActionForm.is_valid', return_value=True) as m:
+            with patch('its.items.forms.AdminActionForm.clean', return_value=data) as clean:
+                
+                form = AdminActionForm(data, user=user)
+                form.cleaned_data = form.clean()
+                form.save(item_pk=new_item.pk, current_user=user)
+
+                try:
+                    user_search = User.objects.get(first_name=data["first_name"])
+                except User.DoesNotExist:
+                    user_search = None
+        
+                self.assertIsNotNone(user_search)
+        
+        # Test 5 Check that an existing user does not have an account created when
+        # an item is returned to them.
+        
+        num_users = User.objects.all().count()
+        
+        with patch('its.items.forms.AdminActionForm.is_valid', return_value=True) as m:
+            with patch('its.items.forms.AdminActionForm.clean', return_value=data) as clean:
+                
+                form = AdminActionForm(data, user=user)
+                form.cleaned_data = form.clean()
+                form.save(item_pk=new_item.pk, current_user=user)
+        
+                self.assertEqual(num_users, User.objects.all().count())
+
+# Helper function tests
+
+class checkLdapTest(TestCase):                
+    
+    def test_ldap_return_true(self):
+    
+    """
+    Check that the correct value of True is returned.
+    *** Currently not working correct ***
+    """
+        
+        with patch('arcutils.ldap.ldapsearch', return_value=True) as m:
+            user = check_ldap("test12345")
+            self.assertTrue(user)
+    
+    def test_ldap_return_false(self):
+        
+    """
+    Check that the correct value of False is returned.
+    *** Currently not working correct ***
+    """
+        
+        
+        with patch('arcutils.ldap.ldapsearch', return_value=False) as m:
+            user = check_ldap("test12345")
+            self.assertFalse(user)
+                
 ## Create your tests here.
 #class ItemsTest(TestCase):
 #    
