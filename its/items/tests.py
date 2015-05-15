@@ -12,7 +12,7 @@ from unittest.mock import patch, Mock
 def create_user():
 
     """
-    Creates a blank regular user.
+    Creates a blank lab attendant user.
     """
 
     user = make(User, is_active=True)
@@ -20,10 +20,11 @@ def create_user():
     user.save()
     return user
 
+    
 def create_full_user(first_name, last_name, email):
     
     """
-    Creates a full regular user
+    Creates a full customer user
     """
 
     user = make(User, first_name=first_name, last_name=last_name, email=email, is_active=False, is_staff=False)
@@ -55,6 +56,7 @@ class PrintoffTest(TestCase):
         response = self.client.get(reverse("printoff", args=[1]))
         self.assertRedirects(response, reverse("login") + "?next=/items/1/", target_status_code=302)
 
+        
     def test_get(self):
     
         """
@@ -62,13 +64,15 @@ class PrintoffTest(TestCase):
         """
             
         user = create_user()
-
         self.client.login(username=user.username, password="password")
+        
         item = make(Item)
         make(Status, item=item)
+        
         response = self.client.get(reverse("printoff", args=[item.pk]))
         self.assertEqual(200, response.status_code)
         self.assertIn(item.description, response.content.decode())
+
         
 class CheckInTest(TestCase):
     
@@ -83,10 +87,11 @@ class CheckInTest(TestCase):
         response = self.client.get(reverse("checkin"))
         self.assertRedirects(response, reverse("login") + "?next=/items/checkin", target_status_code=302)
         
+        
     def test_get(self):
     
         """
-        Tests that the view returns the correct page.
+        Tests that the view returns the checkin page.
         """
     
         user = create_user()
@@ -95,6 +100,7 @@ class CheckInTest(TestCase):
         response = self.client.get(reverse("checkin"))
         self.assertEqual(200, response.status_code)
 
+        
     def test_valid_post(self):
     
         """
@@ -116,7 +122,8 @@ class CheckInTest(TestCase):
     def test_invalid_post(self):
     
         """
-        Tests that the view sends the user back to the checkin page if 
+        Tests that the view sends the user back to the checkin page if
+        they enter invalid data.
         """
     
         user = create_user()
@@ -127,9 +134,11 @@ class CheckInTest(TestCase):
             response = self.client.post(reverse("checkin"), data)
             self.assertEqual(response.status_code, 200)
 
+            
 class ItemlistTest(TestCase):
 
     fixtures = ["actions.json"]
+    
     
     def test_login_required(self):
         
@@ -139,11 +148,12 @@ class ItemlistTest(TestCase):
     
         response = self.client.get(reverse("itemlist"))
         self.assertRedirects(response, reverse("login") + "?next=/items/itemlist", target_status_code=302)
+
         
     def test_initial_get(self):
     
         """
-        Tests that the view sends an authenticated user to the correct page.
+        Tests that the view sends an authenticated user to the itemlist page.
         """
     
         user = create_user()
@@ -151,12 +161,13 @@ class ItemlistTest(TestCase):
         
         response = self.client.get(reverse("itemlist"))
         self.assertEqual(200, response.status_code)
-        
+ 
+ 
     def test_filter_get(self):
     
         """
-        Tests that the view directs the user to a page with the correct item
-        information after a filtering event. 
+        Tests that the view directs the user to the itemlist page
+        after a filtering event. 
         """
     
         user = create_user()
@@ -168,7 +179,10 @@ class ItemlistTest(TestCase):
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, item=new_item, action_taken=new_action)
    
-        data = {'select_location': new_location.pk, 'select_category': new_category.pk}
+        data = {
+                'select_location': new_location.pk, 
+                'select_category': new_category.pk,
+        }
         
         response = self.client.get(reverse("itemlist"), data)
         self.assertEqual(200, response.status_code)
@@ -186,11 +200,11 @@ class AdminActionTest(TestCase):
         response = self.client.get(reverse("admin-action", args=[1]))
         self.assertRedirects(response, reverse("login") + "?next=/items/admin-action/1/", target_status_code=302)
 
+        
     def test_get(self):
     
         """
-        Tests that the view returns a page with the orrect item information
-        when a staff member goes to it.
+        Tests that the view returns the admin action page with the correct item information.
         """
     
         user = create_staff()
@@ -203,7 +217,9 @@ class AdminActionTest(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertIn(new_item.description, response.content.decode())
 
+        
 class AdminItemlistTest(TestCase):
+    
     
     def test_staff_required(self):
     
@@ -214,10 +230,11 @@ class AdminItemlistTest(TestCase):
         response = self.client.get(reverse('admin-itemlist'))
         self.assertRedirects(response, reverse("login") + "?next=/items/admin-itemlist", target_status_code=302)
     
+    
     def test_initial_get(self):
         
         """
-        Tests that the initial retrieval of the page is correct
+        Tests that the initial retrieval of the admin-itemlist page is correct
         """
  
         user = create_staff()
@@ -225,7 +242,8 @@ class AdminItemlistTest(TestCase):
         
         response = self.client.get(reverse("admin-itemlist"))
         self.assertEqual(200, response.status_code)
-        
+    
+    
     def test_blank_post(self):
     
         """
@@ -238,12 +256,13 @@ class AdminItemlistTest(TestCase):
         
         request = self.client.post(reverse("admin-itemlist"))
         self.assertRedirects(request, reverse("admin-itemlist"))
-     
+    
+    
     def test_valid_archive_post(self):
         
         """
         Tests that the view returns the user to the admin itemlist page
-        when the form is valid. 
+        when a valid form is submitted.
         """      
         
         user = create_staff()
@@ -255,12 +274,13 @@ class AdminItemlistTest(TestCase):
                 
                 request = self.client.post(reverse("admin-itemlist"), form)
                 self.assertRedirects(request, reverse("admin-itemlist"))
-                
+    
+    
     def test_invalid_archive_post(self):
         
         """
         Tests that the view returns the user to the admin itemlist page
-        when the form does not validate. 
+        when an invalid form is submitted.
         """
         
         user = create_staff()
@@ -277,11 +297,14 @@ class AdminItemlistTest(TestCase):
         
 class CheckInFormTest(TestCase):
 
+    fixtures = ["actions.json"]
+    
+    
     def test_clean_errors(self):
     
         """
         Tests that the clean method does return errors when
-        the form is filled out correctly.
+        the form is filled out incorrectly.
         """
     
         data = {
@@ -291,6 +314,7 @@ class CheckInFormTest(TestCase):
             "email": "",
             "username": "a"
         }
+        
         with patch("its.items.forms.ModelForm.clean", return_value=data) as m:
             with patch("its.items.forms.check_ldap", return_value=False) as ldap: 
                 with patch("its.items.forms.CheckInForm.add_error") as add_error:
@@ -300,14 +324,14 @@ class CheckInFormTest(TestCase):
                     add_error.assert_any_call_with("last_name", "Last name required")
                     add_error.assert_any_call_with("email", "Email required")
                     add_error.assert_any_call_with("username", "Invalid username, enter a valid username or leave blank.")
-     
+    
+    
     def test_clean_no_errors(self):
         
         """
         Tests that the clean method does not return errors when
         the form is filled out correctly.
         """
-    
     
         data = {
             "possible_owner_found": "1",
@@ -316,16 +340,18 @@ class CheckInFormTest(TestCase):
             "email": "test@test.com",
             "username": "a"
         }
+        
         with patch('its.items.forms.ModelForm.clean', return_value=data) as m:
             with patch('its.items.forms.check_ldap', return_value=True) as ldap:
                 form = CheckInForm()
-                cleaned_data = form.clean()
-                self.assertTrue(cleaned_data['possible_owner_found'] == '1')
-                self.assertTrue(cleaned_data['username'] == 'a')
-                self.assertTrue(cleaned_data['first_name'] == 'Test')
-                self.assertTrue(cleaned_data['last_name'] == 'Test')
-                self.assertTrue(cleaned_data['email'] == 'test@test.com')
-    
+                form.cleaned_data = form.clean()
+                self.assertTrue(form.cleaned_data['possible_owner_found'] == data['possible_owner_found'])
+                self.assertTrue(form.cleaned_data['username'] == data['username'])
+                self.assertTrue(form.cleaned_data['first_name'] == data['first_name'])
+                self.assertTrue(form.cleaned_data['last_name'] == data['last_name'])
+                self.assertTrue(form.cleaned_data['email'] == data['email'])
+
+                
     def test_save_new_user(self):
         
         """
@@ -333,10 +359,8 @@ class CheckInFormTest(TestCase):
         does not already exist in the database.
         """
         
-        fixtures = ["actions.json"]
-        
         new_item = make(Item)
-        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
@@ -369,16 +393,16 @@ class CheckInFormTest(TestCase):
                 self.assertTrue(data['last_name'] == new_user.last_name)
                 self.assertTrue(data['email'] == new_user.email)
  
+ 
     def test_save_old_user(self):
         
         """
         Tests the save method to make sure it does not create a new user
         when the user already exists in the database.
         """
-        fixtures = ["actions.json"]
         
         new_item = make(Item)
-        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
@@ -416,10 +440,8 @@ class CheckInFormTest(TestCase):
         Checks that an email is not sent when a non-valuable item is checked in.
         """
         
-        fixtures = ["actions.json"]
-        
         new_item = make(Item, is_valuable=False)
-        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
@@ -454,10 +476,8 @@ class CheckInFormTest(TestCase):
         Checks that an email was sent when a possible owner is indicated.
         """
         
-        fixtures = ["actions.json"]
-        
         new_item = make(Item, is_valuable=False)
-        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
@@ -485,7 +505,8 @@ class CheckInFormTest(TestCase):
 
                 self.assertEquals(len(mail.outbox), 1)
                 self.assertEquals(mail.outbox[0].subject, 'An item belonging to you was found')
-                
+   
+   
     def test_save_staff_and_user_email(self):
     
         """
@@ -493,10 +514,8 @@ class CheckInFormTest(TestCase):
         item is checked in.
         """
         
-        fixtures = ["actions.json"]
-        
         new_item = make(Item, is_valuable=True)
-        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
@@ -529,6 +548,9 @@ class CheckInFormTest(TestCase):
                 
 class ItemArchiveFormTest(TestCase):
    
+    fixtures = ["actions.json"]
+    
+    
     def test_init(self):
     
         """
@@ -539,7 +561,7 @@ class ItemArchiveFormTest(TestCase):
         self.client.login(username=user.username, password="password")
         
         new_item = make(Item)        
-        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
@@ -554,6 +576,7 @@ class ItemArchiveFormTest(TestCase):
         item_archive_form = ItemArchiveForm(request, item_list=item_list)
         self.assertTrue(item_archive_form.fields[archive_key])
 
+        
     def test_save(self):
     
         """
@@ -564,7 +587,7 @@ class ItemArchiveFormTest(TestCase):
         self.client.login(username=user.username, password="password")
         
         new_item = make(Item, is_archived=False)        
-        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
@@ -585,6 +608,7 @@ class ItemArchiveFormTest(TestCase):
         new_item = Item.objects.get(pk=new_item.pk)
         self.assertTrue(new_item.is_archived)
 
+        
     def test_iter(self):
     
         """
@@ -595,7 +619,7 @@ class ItemArchiveFormTest(TestCase):
         self.client.login(username=user.username, password="password")
         
         new_item = make(Item, is_archived=False)        
-        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
@@ -613,6 +637,9 @@ class ItemArchiveFormTest(TestCase):
         
 class AdminItemFilterFormTest(TestCase):
 
+    fixtures = ["actions.json"]
+    
+    
     def test_filter(self):
     
         """
@@ -631,7 +658,7 @@ class AdminItemFilterFormTest(TestCase):
         # Test 1 - Valuable item / Search on location and category.
         
         new_item1 = make(Item, is_archived=False, is_valuable=True)        
-        new_action = make(Action, machine_name=Action.CHECKED_IN)
+        new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status = make(Status, action_taken=new_action, item=new_item1)
         
         data = {
@@ -712,6 +739,8 @@ class AdminItemFilterFormTest(TestCase):
         
 class ItemFilterFormTest (TestCase):
 
+    fixtures = ["actions.json"]
+
     def test_filter(self):
         
         """
@@ -720,11 +749,11 @@ class ItemFilterFormTest (TestCase):
         
         
         new_item1 = make(Item, is_archived=False, is_valuable=False)        
-        new_action1 = make(Action, machine_name=Action.CHECKED_IN)
+        new_action1 = Action.objects.get(machine_name=Action.CHECKED_IN)
         new_status1 = make(Status, action_taken=new_action1, item=new_item1)
  
         new_item2 = make(Item, is_archived=True, is_valuable=False)    
-        new_action2 = make(Action, machine_name=Action.RETURNED)
+        new_action2 = Action.objects.get(machine_name=Action.RETURNED)
         new_status2 = make(Status, action_taken=new_action2, item=new_item2)
  
         data = {
@@ -746,6 +775,7 @@ class ItemFilterFormTest (TestCase):
 class AdminActionFormTest (TestCase):
     
     fixtures = ["actions.json"]
+    
     
     def test_init (self):
         
@@ -898,7 +928,7 @@ class AdminActionFormTest (TestCase):
             self.assertTrue(form.cleaned_data['note'] == data['note'])
     
     
-    def test_setup(self):
+    def test_save(self):
     
         """
         Test 1 - Check that the returned to field is set to None when an item
@@ -1032,183 +1062,31 @@ class AdminActionFormTest (TestCase):
         
                 self.assertEqual(num_users, User.objects.all().count())
 
+                
 # Helper function tests
 
 class checkLdapTest(TestCase):                
     
+    
     def test_ldap_return_true(self):
     
-    """
-    Check that the correct value of True is returned.
-    *** Currently not working correct ***
-    """
+        """
+        Check that the correct value of True is returned for a username
+        that is in LDAP.
+        """
         
-        with patch('arcutils.ldap.ldapsearch', return_value=True) as m:
+        with patch('its.items.forms.ldapsearch', return_value=True) as m:
             user = check_ldap("test12345")
             self.assertTrue(user)
-    
+
+            
     def test_ldap_return_false(self):
         
-    """
-    Check that the correct value of False is returned.
-    *** Currently not working correct ***
-    """
+        """
+        Check that the correct value of False is returned for a username that
+        is not in LDAP.
+        """
         
-        
-        with patch('arcutils.ldap.ldapsearch', return_value=False) as m:
+        with patch('its.items.forms.ldapsearch', return_value=False) as m:
             user = check_ldap("test12345")
             self.assertFalse(user)
-                
-## Create your tests here.
-#class ItemsTest(TestCase):
-#    
-#    def setUp(self):
-#        
-#        # Not created yet
-#        fixtures = ['actions.json']
-#        
-#        super(ItemsTest, self).setUp()
-#        
-#        new_user = User(email="jdoe9@pdx.edu", first_name="Jon",
-#        last_name="Doe8", username="jdoe9", password="test", is_active=True, is_staff=True)
-#        
-#        new_user.save()
-#        
-#        self.new_user = new_user
-#        
-#        new_location = Location(name="ML 115")
-#        new_location.save()
-#        
-#        self.new_location = new_location
-#        
-#        new_category = Category(name="USB Storage Device")
-#        new_category.save()
-#        
-#        self.new_category = new_category
-#        
-#        new_item = Item(location=new_location, category=new_category, 
-#        description="usb device", is_valuable=False, possible_owner=None, 
-#        possible_owner_contacted=False, returned_to=None, found_by=new_user)       
-#        new_item.save()
-#        
-#        self.new_item = new_item
-#        
-#        new_action = Action(name="Checked in", machine_name="CHECKEDIN", weight=0)
-#        new_action.save()
-#        
-#        self.new_action = new_action
-#        
-#        new_status = Status(item=new_item, action_taken=new_action, note="Initial check-in")
-#        new_status.save()
-#        self.new_status = new_status
-#       
-#        self.client.login(email=self.new_user.email, password=self.new_user.password)
-#        
-#        
-#
-#    def test_valid_printoff_view(self):
-#        
-#        response = self.client.get(reverse("printoff", args=[self.new_item.pk]))
-#        self.assertEqual(response.status_code, 200)
-#        
-#    def test_invalid_printoff_view(self):
-#    
-#        bad_item = Item.objects.last().pk + 1
-#        
-#        response = self.client.get(reverse("printoff", args=[bad_item]))
-#        self.assertEqual(response.status_code, 404)
-#        
-#    def test_valid_checkin_get_view(self):
-#        
-#        response = self.client.get(reverse('checkin'))
-#        self.assertEqual(response.status_code, 200)
-#    
-#    def test_invalid_checkin_post_view(self):
-#    
-#        with patch('its.items.forms.CheckInForm.is_valid', return_value=False):
-#            response = self.client.post(reverse('checkin'))
-#        
-#        self.assertEqual(response.status_code, 200)
-#     
-#    #def test_valid_checkin_post_view(self):
-#    
-#    #    form = {'location': self.new_location.pk, 'category': self.new_category.pk, 
-#    #    'description': "usb device", 'is_valuable': False, 'possible_owner_contacted': False,
-#    #    'possible_owner_found': False, 'username': "", 'first_name': "", 'last_name': "", 
-#    #    'email': ""}
-#        
-#    #    response = self.client.post(reverse('checkin'), data=form)
-#        
-#    #    self.assertEqual(response.status_code, 302)
-#    
-#    def test_valid_CheckInForm_clean_form(self):
-#        
-#        form = CheckInForm(data={'location': self.new_location.pk, 'category': self.new_category.pk, 
-#        'description': "usb device", 'is_valuable': False, 'possible_owner_contacted': False,
-#        'possible_owner_found': False, 'username': "", 'first_name': "", 'last_name': "", 
-#        'email': ""})
-#        
-#        self.assertEqual(form.is_valid(), True)
-#        self.assertEqual(form.cleaned_data['username'], "")
-#        self.assertEqual(form.cleaned_data['first_name'], "")
-#        self.assertEqual(form.cleaned_data['last_name'], "")
-#        self.assertEqual(form.cleaned_data['email'], "")
-#        self.assertEqual(form.cleaned_data['possible_owner_found'], False)
-#        
-#    def test_invalid_CheckIn_clean_logic_form(self):
-#    
-#        form = CheckInForm(data={'location': self.new_location.pk, 'category': self.new_category.pk, 
-#        'description': "usb device", 'is_valuable': False, 'possible_owner_contacted': False,
-#        'possible_owner_found': True, 'username': "", 'first_name': "", 'last_name': "", 
-#        'email': ""})
-#        
-#        self.assertEqual(form.is_valid(), False)
-#        self.assertEqual(form.errors['username'], ["username required"])
-#        self.assertEqual(form.errors['first_name'], ["First name required"])
-#        self.assertEqual(form.errors['last_name'], ["Last name required"])
-#        self.assertEqual(form.errors['email'], ["Email required"])
-#       
-#    def test_valid_CheckIn_save_logic_form(self):
-#       
-#        form = CheckInForm(data={'location': self.new_location.pk, 'category': self.new_category.pk, 
-#        'description': "usb device", 'is_valuable': False, 'possible_owner_contacted': False,
-#        'possible_owner_found': True, 'username': "jdoe10", 'first_name': "Jon", 'last_name': "Doe10", 
-#        'email': "jdoe10@pdx.edu"})
-#        
-#        self.assertEqual(form.is_valid(), True)
-#        
-#        form.save(found_by=self.new_user)      
-#        possible_owner = User.objects.get(username="jdoe10")
-#        
-#        self.assertEqual(possible_owner.first_name, "Jon")
-#        self.assertEqual(possible_owner.last_name, "Doe10")
-#        self.assertEqual(possible_owner.email, "jdoe10@pdx.edu")
-#        
-#    #def test_invalid_CheckIn_save_logic_form(self):
-#    # Not sure how to write this
-#
-#    #def test_valid_Item_last_status_model(self):
-#    
-#    #    self.assertEqual(self.new_item.last_status(), self.new_status)
-#        
-#    def test_valid_Item_str_model(self):
-#        
-#        self.assertEqual(str(self.new_item), self.new_item.description)
-#        
-#    def test_valid_Category_str_model(self):
-#        
-#        self.assertEqual(str(self.new_category), self.new_category.name)
-#        
-#    def test_valid_Location_str_model(self):
-#        
-#        self.assertEqual(str(self.new_location), self.new_location.name)
-#        
-#    def test_valid_Status_str_model(self):
-#        
-#        self.assertEqual(str(self.new_status), str(self.new_status.status_id))
-#    
-#    def test_valid_Action_str_model(self):
-#        
-#        self.assertEqual(str(self.new_action), self.new_action.name)
-#    
-#    
