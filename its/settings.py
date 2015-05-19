@@ -51,13 +51,13 @@ DATABASES = {
 LOGGING_CONFIG = 'arcutils.logging.basic'
 
 LOGIN_URL = reverse_lazy("login")
-#LOGIN_REDIRECT_URL = reverse_lazy("users-home")
+# LOGIN_REDIRECT_URL = reverse_lazy("users-home")
 LOGOUT_URL = reverse_lazy("logout")
 
 # uncomment to use celery, also update celery.py, and requirements.txt
-#BROKER_URL = 'amqp://guest:guest@localhost//'
-#CELERY_ACKS_LATE = True
-#CELERY_RESULT_BACKEND = 'amqp'
+# BROKER_URL = 'amqp://guest:guest@localhost//'
+# CELERY_ACKS_LATE = True
+# CELERY_RESULT_BACKEND = 'amqp'
 
 # uncomment to use CAS. You need to update requirements.txt too
 CAS_SERVER_URL = 'https://sso.pdx.edu/cas/'
@@ -92,14 +92,14 @@ INTERNAL_IPS = IPList(['10.*', '192.168.*'])
 
 INSTALLED_APPS = (
     'django.contrib.admin',
-    #'django.contrib.auth',
+    # 'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'arcutils',
     'its.users',
-	'its.items',
+    'its.items',
 )
 
 LDAP = {
@@ -112,10 +112,10 @@ LDAP = {
                 'ca_file': PROJECT_DIR('ca.crt'),
     },
     'groups': {
-                'host': variable("AD_SERVER", default="ldaps://oitdcpsu02.psu.ds.pdx.edu"),
-                'username': variable("AD_USERNAME", default="lostandfound_svc"),
-                'password': variable("AD_PASSWORD", default=''),
-                'search_dn': variable("AD_SEARCH_BASE", default="ou=people,dc=psu,dc=ds,dc=pdx,dc=edu"),
+               'host': variable("AD_SERVER", default="ldaps://oitdcpsu02.psu.ds.pdx.edu"),
+               'username': variable("AD_USERNAME", default="lostandfound_svc"),
+               'password': variable("AD_PASSWORD", default=''),
+               'search_dn': variable("AD_SEARCH_BASE", default="ou=people,dc=psu,dc=ds,dc=pdx,dc=edu"),
     }
 }
 
@@ -177,7 +177,7 @@ TEMPLATE_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
     PROJECT_DIR("templates"),
-	#[os.path.join(BASE_DIR, 'templates')],
+    # [os.path.join(BASE_DIR, 'templates')],
 )
 
 # SECURITY WARNING: keep the secret key used in production secret!
