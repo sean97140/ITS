@@ -13,7 +13,7 @@
             {{ item_filter.select_category|bootstrap }}
             {{ item_filter.select_location|bootstrap }}
             {{ item_filter.sort_by|bootstrap }}
-            {{ item_filter.search_keyword_or_name|bootstrap }}
+            {{ item_filter.keyword_or_last_name|bootstrap }}
             <input type="submit" class="btn btn-primary" name="action" value="Filter" />
             <a href="{% url 'admin-itemlist' %}" class="btn btn-default" role="button">Reset</a>
         </form>
