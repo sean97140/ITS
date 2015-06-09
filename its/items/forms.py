@@ -6,6 +6,7 @@ from its.items.models import Item, Location, Category, Status, Action
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from arcutils.ldap import escape, ldapsearch
+from django.db.models import Q
 
 
 def check_ldap(username):
@@ -184,7 +185,7 @@ class AdminItemFilterForm(forms.Form):
     select_category = forms.ModelChoiceField(queryset=Category.objects.all(), required=False)
     sort_by = forms.ChoiceField(choices=sort_choices, required=False)
     select_items = forms.ChoiceField(choices=admin_item_choices, required=False, initial=admin_item_choices[0][0])
-    search_keyword_or_name = forms.CharField(max_length=50, required=False)
+    keyword_or_last_name = forms.CharField(max_length=50, required=False)
 
     def filter(self):
 
@@ -192,7 +193,7 @@ class AdminItemFilterForm(forms.Form):
         Setup a filter, depending on if the user chose to filter by an active, archived, or valuable items.
         As well as by choice of location category, or keyword. The user can also select a sorting order.
         """
-
+        keyword_search = None
         kwargs = {}
 
         valid = False
@@ -217,13 +218,17 @@ class AdminItemFilterForm(forms.Form):
             if self.cleaned_data['select_category'] is not None:
                 kwargs['category'] = Category.objects.get(name=self.cleaned_data['select_category']).pk
 
-            if self.cleaned_data['search_keyword_or_name'] is not '':
-                kwargs['description__icontains'] = self.cleaned_data['search_keyword_or_name']
-
+            if self.cleaned_data['keyword_or_last_name'] is not '':
+                keyword_search = Q(description__icontains = self.cleaned_data['keyword_or_last_name']) | Q(possible_owner__last_name__icontains = self.cleaned_data['keyword_or_last_name'])
+				
         else:
             kwargs['is_archived'] = False
 
-        item_list = Item.objects.filter(**kwargs).order_by('-pk')
+        if keyword_search:
+            item_list = Item.objects.filter(keyword_search, **kwargs).order_by('-pk')
+
+        else:
+            item_list = Item.objects.filter(**kwargs).order_by('-pk')
 
         if valid and self.cleaned_data['sort_by'] is not '':
             item_list = item_list.order_by(self.cleaned_data['sort_by'])
