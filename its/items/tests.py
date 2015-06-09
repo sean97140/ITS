@@ -626,7 +626,7 @@ class AdminItemFilterFormTest(TestCase):
         data = {'select_items': "valuable",
                 'select_location': new_item1.location.name,
                 'select_category': new_item1.category.name,
-                'search_keyword_or_name': new_item1.description,
+                'keyword_or_last_name': new_item1.description,
                 'sort_by': '', }
 
         item_filter_form = AdminItemFilterForm(data)
@@ -643,7 +643,7 @@ class AdminItemFilterFormTest(TestCase):
         data = {'select_items': "archived",
                 'select_location': None,
                 'select_category': None,
-                'search_keyword_or_name': new_item2.description,
+                'keyword_or_last_name': new_item2.description,
                 'sort_by': '', }
 
         with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True):
@@ -660,7 +660,7 @@ class AdminItemFilterFormTest(TestCase):
         data = {'select_items': "",
                 'select_location': None,
                 'select_category': None,
-                'search_keyword_or_name': new_item3.description,
+                'keyword_or_last_name': new_item3.description,
                 'sort_by': '', }
 
         with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True):
@@ -677,7 +677,7 @@ class AdminItemFilterFormTest(TestCase):
         data = {'select_items': "",
                 'select_location': None,
                 'select_category': None,
-                'search_keyword_or_name': '',
+                'keyword_or_last_name': '',
                 'sort_by': 'pk', }
 
         with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True):
@@ -711,7 +711,7 @@ class ItemFilterFormTest (TestCase):
         data = {'select_items': "",
                 'select_location': None,
                 'select_category': None,
-                'search_keyword_or_name': "",
+                'keyword_or_last_name': "",
                 'sort_by': 'pk', }
 
         item_filter_form = ItemFilterForm(data)
