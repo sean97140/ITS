@@ -615,6 +615,8 @@ class AdminItemFilterFormTest(TestCase):
         for non-valuable and non-archived items.
 
         Test 4 - Checks that items are sorted in the order specified.
+        
+        Test 5 - Search on last name
         """
 
         # Test 1 - Valuable item / Search on location and category.
@@ -626,7 +628,7 @@ class AdminItemFilterFormTest(TestCase):
         data = {'select_items': "valuable",
                 'select_location': new_item1.location.name,
                 'select_category': new_item1.category.name,
-                'search_keyword_or_name': new_item1.description,
+                'keyword_or_last_name': new_item1.description,
                 'sort_by': '', }
 
         item_filter_form = AdminItemFilterForm(data)
@@ -643,7 +645,7 @@ class AdminItemFilterFormTest(TestCase):
         data = {'select_items': "archived",
                 'select_location': None,
                 'select_category': None,
-                'search_keyword_or_name': new_item2.description,
+                'keyword_or_last_name': new_item2.description,
                 'sort_by': '', }
 
         with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True):
@@ -660,7 +662,7 @@ class AdminItemFilterFormTest(TestCase):
         data = {'select_items': "",
                 'select_location': None,
                 'select_category': None,
-                'search_keyword_or_name': new_item3.description,
+                'keyword_or_last_name': new_item3.description,
                 'sort_by': '', }
 
         with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True):
@@ -677,7 +679,7 @@ class AdminItemFilterFormTest(TestCase):
         data = {'select_items': "",
                 'select_location': None,
                 'select_category': None,
-                'search_keyword_or_name': '',
+                'keyword_or_last_name': '',
                 'sort_by': 'pk', }
 
         with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True):
@@ -688,8 +690,27 @@ class AdminItemFilterFormTest(TestCase):
 
             self.assertLess(values[0]['item_id'], values[1]['item_id'])
             self.assertLess(values[1]['item_id'], values[2]['item_id'])
+        
+        # Test 5 - Search on last name
+        user = create_full_user("test", "test", "test@pdx.edu")
+        
+        new_item5 = make(Item, is_archived=False, is_valuable=False, possible_owner=user)
 
+        data = {'select_items': "",
+                'select_location': None,
+                'select_category': None,
+                'keyword_or_last_name': user.last_name,
+                'sort_by': '', }
 
+        with patch('its.items.forms.AdminItemFilterForm.is_valid', return_value=True):
+            item_filter_form = AdminItemFilterForm(data)
+            item_filter_form.cleaned_data = data
+            item_list = item_filter_form.filter()
+            values = item_list.values()
+
+            self.assertEqual(values.get()['item_id'], new_item5.pk)
+            
+            
 class ItemFilterFormTest (TestCase):
 
     fixtures = ["actions.json"]
@@ -711,7 +732,7 @@ class ItemFilterFormTest (TestCase):
         data = {'select_items': "",
                 'select_location': None,
                 'select_category': None,
-                'search_keyword_or_name': "",
+                'keyword_or_last_name': "",
                 'sort_by': 'pk', }
 
         item_filter_form = ItemFilterForm(data)
