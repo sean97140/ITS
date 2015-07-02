@@ -98,7 +98,6 @@ class Item(models.Model):
     description = models.TextField()
     is_valuable = models.BooleanField(default=False, help_text=is_valuable_help_text)
     possible_owner = models.ForeignKey(User, related_name='item_possible_owner', null=True)
-    possible_owner_contacted = models.BooleanField(default=False)
     returned_to = models.ForeignKey(User, related_name='item_returned_to', null=True)
     is_archived = models.BooleanField(default=False)
 

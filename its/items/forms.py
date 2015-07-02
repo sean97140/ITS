@@ -432,5 +432,4 @@ class CheckInForm(ModelForm):
 
     class Meta:
         model = Item
-        fields = ['location', 'category', 'description', 'is_valuable',
-                  'possible_owner_contacted']
+        fields = ['location', 'category', 'description', 'is_valuable']

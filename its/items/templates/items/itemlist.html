@@ -23,7 +23,6 @@
             <th>Category</th>
             <th>Description</th>
             <th>Possible owner</th>
-            <th>Possible owner contacted</th>
             <th>Status</th>
         </tr>
     </thead>
@@ -36,7 +35,6 @@
                 <td>{{ item.category }}</td>
                 <td>{{ item.description }}</td>
                 <td>{{ item.possible_owner }}</td>
-                <td>{{ item.possible_owner_contacted }}</td>
                 <td>{{ item.last_status.action_taken }}</td>
             </tr>
         {% endfor %}
