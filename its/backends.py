@@ -38,7 +38,7 @@ class ITSBackend(CASBackend):
         if re.search("(CN=ITS_CAVS_Staff_GG)", str(memberOf)):
             staff = True
             
-        if re.search("(CN=_GG)", str(memberOf)):
+        if re.search("(CN=TLC_GG)", str(memberOf)):
             staff = True
 
         if re.search("(OU=ARC)", str(memberOf)):
