@@ -13,7 +13,7 @@ urlpatterns = patterns(
     # url(r'^$', 'its.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    url(r'^admin/', include(admin.site.urls)),
+    #url(r'^admin/', include(admin.site.urls)),
     url(r'^home$', home, name='home'),
     url(r'^items/admin-action/(?P<item_num>\d+)/$', items.adminaction, name='admin-action'),
     url(r'^$', items.checkin, name='index'),
