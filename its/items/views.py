@@ -63,15 +63,15 @@ def adminaction(request, item_num):
     # Perform action on item
     if request.method == 'POST':
 
-        form = AdminActionForm(request.POST, user=request.user)
+        form = AdminActionForm(request.POST, current_user=request.user)
 
         if form.is_valid():
             messages.success(request, "Item successfully changed")
             form.save(item_pk=item_num, current_user=request.user)
-            return HttpResponseRedirect(reverse("admin-itemlist"))
+            return HttpResponseRedirect(request.get_full_path())
 
     else:
-        form = AdminActionForm(user=request.user)
+        form = AdminActionForm(current_user=request.user)
 
     context = {'item': chosen_item,
                'form': form,
