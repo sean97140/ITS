@@ -59,18 +59,20 @@ class AdminActionForm(forms.Form):
     last_name = forms.CharField(required=False)
     email = forms.EmailField(required=False)
 
-    def __init__(self, *args, user, **kwargs):
+        
+    def __init__(self, *args, current_user, **kwargs):
 
         """
         Allow only the return option to be selected by lab attendants.
         """
 
-        self.user = user
+        self.user = current_user
         super(AdminActionForm, self).__init__(*args, **kwargs)
 
         if not self.user.is_staff:
-            self.fields['action_choice'].queryset = self.fields['action_choice'].queryset.filter(machine_name=Action.RETURNED)
-
+            self.fields.pop('action_choice')
+        
+        
     def checkout_email(self, item):
 
         """
@@ -101,12 +103,12 @@ class AdminActionForm(forms.Form):
         """
 
         cleaned_data = super().clean()
-        action_choice = cleaned_data.get("action_choice")
+        action_choice = self.cleaned_data.get("action_choice", Action.objects.get(machine_name=Action.RETURNED))
         note = cleaned_data.get("note")
         first_name = cleaned_data.get("first_name")
         last_name = cleaned_data.get("last_name")
         email = cleaned_data.get("email")
-
+        
         if (action_choice.machine_name == Action.RETURNED) and not first_name:
             self.add_error("first_name", "First name is required when returning item.")
 
@@ -131,12 +133,12 @@ class AdminActionForm(forms.Form):
         If an item is being set to checked in set it's returned_to field to None.
         """
 
-        action_choice = self.cleaned_data["action_choice"]
         item = Item.objects.get(pk=item_pk)
+        action_choice = self.cleaned_data.get("action_choice", Action.objects.get(machine_name=Action.RETURNED))
         first_name = self.cleaned_data.get("first_name")
         last_name = self.cleaned_data.get("last_name")
         email = self.cleaned_data.get("email")
-        new_action = Action.objects.get(name=self.cleaned_data['action_choice'])
+        new_action = Action.objects.get(name=action_choice)
         new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note'], performed_by=current_user).save()
 
         # If they chose to change status to checked in we need to make sure to
