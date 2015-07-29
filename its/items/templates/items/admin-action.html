@@ -42,13 +42,9 @@
             <h3>Return this item</h3>
         {% endif %}
         {% csrf_token %}
-        {% if user.is_staff %}
-            {{ form.action_choice|bootstrap }}
-        {% else %}
-            {{ form.action_choice.as_hidden }}
-        {% endif %}
+        {{ form.action_choice|bootstrap }}
         {{ form.note|bootstrap  }}
-        <div class="returnFields" style="{% if not form.action_choice.data %}display:none{% endif %}">
+        <div class="returnFields">
             <legend>Enter the owner's name as it appears on their photo ID, as well as their email address.</legend>
             {{ form.first_name|bootstrap }}
             {{ form.last_name|bootstrap }}
