@@ -103,22 +103,22 @@ class AdminActionForm(forms.Form):
         """
 
         cleaned_data = super().clean()
-        action_choice = self.cleaned_data.get("action_choice", Action.objects.get(machine_name=Action.RETURNED))
+        cleaned_data["action_choice"] = cleaned_data.get("action_choice", Action.objects.get(machine_name=Action.RETURNED))
         note = cleaned_data.get("note")
         first_name = cleaned_data.get("first_name")
         last_name = cleaned_data.get("last_name")
         email = cleaned_data.get("email")
         
-        if (action_choice.machine_name == Action.RETURNED) and not first_name:
+        if (cleaned_data["action_choice"].machine_name == Action.RETURNED) and not first_name:
             self.add_error("first_name", "First name is required when returning item.")
 
-        if (action_choice.machine_name == Action.RETURNED) and not last_name:
+        if (cleaned_data["action_choice"].machine_name == Action.RETURNED) and not last_name:
             self.add_error("last_name", "Last name is required when returning item.")
 
-        if (action_choice.machine_name == Action.RETURNED) and not email:
+        if (cleaned_data["action_choice"].machine_name == Action.RETURNED) and not email:
             self.add_error("email", "Email is required when returning item.")
 
-        if (action_choice.machine_name == Action.OTHER) and not note:
+        if (cleaned_data["action_choice"].machine_name == Action.OTHER) and not note:
             self.add_error("note", "Note required when choosing action of type Other.")
 
         return cleaned_data
@@ -134,12 +134,11 @@ class AdminActionForm(forms.Form):
         """
 
         item = Item.objects.get(pk=item_pk)
-        action_choice = self.cleaned_data.get("action_choice", Action.objects.get(machine_name=Action.RETURNED))
+        action_choice = self.cleaned_data["action_choice"]
         first_name = self.cleaned_data.get("first_name")
         last_name = self.cleaned_data.get("last_name")
         email = self.cleaned_data.get("email")
-        new_action = Action.objects.get(name=action_choice)
-        new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note'], performed_by=current_user).save()
+        new_status = Status(item=item, action_taken=action_choice, note=self.cleaned_data['note'], performed_by=current_user).save()
 
         # If they chose to change status to checked in we need to make sure to
         # set the returned_to field to None
