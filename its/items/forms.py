@@ -59,7 +59,7 @@ class AdminActionForm(forms.Form):
     last_name = forms.CharField(required=False)
     email = forms.EmailField(required=False)
 
-        
+
     def __init__(self, *args, current_user, **kwargs):
 
         """
@@ -71,8 +71,8 @@ class AdminActionForm(forms.Form):
 
         if not self.user.is_staff:
             self.fields.pop('action_choice')
-        
-        
+
+
     def checkout_email(self, item):
 
         """
@@ -108,7 +108,7 @@ class AdminActionForm(forms.Form):
         first_name = cleaned_data.get("first_name")
         last_name = cleaned_data.get("last_name")
         email = cleaned_data.get("email")
-        
+
         if (cleaned_data["action_choice"].machine_name == Action.RETURNED) and not first_name:
             self.add_error("first_name", "First name is required when returning item.")
 
@@ -221,7 +221,7 @@ class AdminItemFilterForm(forms.Form):
 
             if self.cleaned_data['keyword_or_last_name'] is not '':
                 keyword_search = Q(description__icontains = self.cleaned_data['keyword_or_last_name']) | Q(possible_owner__last_name__icontains = self.cleaned_data['keyword_or_last_name'])
-				
+
         else:
             kwargs['is_archived'] = False
 
