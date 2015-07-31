@@ -835,25 +835,19 @@ class AdminActionFormTest (TestCase):
                     add_error.assert_any_call_with("note", "Note required when choosing action of type Other.")
 
         # Test 3 - Check for errors when action_choice not in dictionary.
-        # Still working on this test.
-        user = create_staff()
+        # Failed as NoneType AttributeError for machine_name in clean on old code.
+        user = create_user()
 
         new_action = Action.objects.get(machine_name=Action.RETURNED)
 
-        data = {'note': "",
+        data = {'action_choice': None,
+                'note': "",
                 'first_name': "",
                 'last_name': "",
                 'email': "", }
-
-        with patch('its.items.forms.AdminActionForm.clean', return_value=data):
-                with patch("its.items.forms.AdminActionForm.add_error") as add_error:
-                    form = AdminActionForm(data, current_user=user)
-                    form.clean()
-
-                    add_error.assert_any_call_with("first_name", "First name is required when returning item.")
-                    add_error.assert_any_call_with("last_name", "Last name is required when returning item.")
-                    add_error.assert_any_call_with("email", "Email is required when returning item.")
                 
+        form = AdminActionForm(data, current_user=user)
+        self.assertFalse(form.is_valid())
                     
                     
     def test_clean_no_errors(self):
