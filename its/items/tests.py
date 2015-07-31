@@ -610,7 +610,7 @@ class AdminItemFilterFormTest(TestCase):
         for non-valuable and non-archived items.
 
         Test 4 - Checks that items are sorted in the order specified.
-        
+
         Test 5 - Search on last name
         """
 
@@ -685,10 +685,10 @@ class AdminItemFilterFormTest(TestCase):
 
             self.assertLess(values[0]['item_id'], values[1]['item_id'])
             self.assertLess(values[1]['item_id'], values[2]['item_id'])
-        
+
         # Test 5 - Search on last name
         user = create_full_user("test", "test", "test@pdx.edu")
-        
+
         new_item5 = make(Item, is_archived=False, is_valuable=False, possible_owner=user)
 
         data = {'select_items': "",
@@ -704,8 +704,8 @@ class AdminItemFilterFormTest(TestCase):
             values = item_list.values()
 
             self.assertEqual(values.get()['item_id'], new_item5.pk)
-            
-            
+
+
 class ItemFilterFormTest (TestCase):
 
     fixtures = ["actions.json"]
@@ -764,7 +764,7 @@ class AdminActionFormTest (TestCase):
         form = AdminActionForm(current_user=user)
         self.assertEqual(len(form.fields['action_choice'].queryset), total_actions)
         self.assertEquals(len(form.fields), 5)
-        
+
     def test_checkout_email(self):
 
         """
@@ -795,6 +795,7 @@ class AdminActionFormTest (TestCase):
         """
         Test 1 - Check that errors appear when returning item with bad data.
         Test 2 - Check that errors appear when performing other action with bad data.
+        Test 3 - Check that errors appear when action_choice is of type None.
         """
 
         # Test 1 - Check for errors when returning item.
@@ -838,18 +839,17 @@ class AdminActionFormTest (TestCase):
         # Failed as NoneType AttributeError for machine_name in clean on old code.
         user = create_user()
 
-        new_action = Action.objects.get(machine_name=Action.RETURNED)
+
 
         data = {'action_choice': None,
                 'note': "",
                 'first_name': "",
                 'last_name': "",
                 'email': "", }
-                
+
         form = AdminActionForm(data, current_user=user)
         self.assertFalse(form.is_valid())
-                    
-                    
+
     def test_clean_no_errors(self):
 
         """
