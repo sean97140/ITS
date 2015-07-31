@@ -610,7 +610,7 @@ class AdminItemFilterFormTest(TestCase):
         for non-valuable and non-archived items.
 
         Test 4 - Checks that items are sorted in the order specified.
-        
+
         Test 5 - Search on last name
         """
 
@@ -685,10 +685,10 @@ class AdminItemFilterFormTest(TestCase):
 
             self.assertLess(values[0]['item_id'], values[1]['item_id'])
             self.assertLess(values[1]['item_id'], values[2]['item_id'])
-        
+
         # Test 5 - Search on last name
         user = create_full_user("test", "test", "test@pdx.edu")
-        
+
         new_item5 = make(Item, is_archived=False, is_valuable=False, possible_owner=user)
 
         data = {'select_items': "",
@@ -704,8 +704,8 @@ class AdminItemFilterFormTest(TestCase):
             values = item_list.values()
 
             self.assertEqual(values.get()['item_id'], new_item5.pk)
-            
-            
+
+
 class ItemFilterFormTest (TestCase):
 
     fixtures = ["actions.json"]
@@ -753,17 +753,17 @@ class AdminActionFormTest (TestCase):
 
         user = create_user()
 
-        form = AdminActionForm(user=user)
-        self.assertEqual(form.fields['action_choice'].queryset[0].machine_name, Action.RETURNED)
-        self.assertEqual(len(form.fields['action_choice'].queryset), 1)
+        form = AdminActionForm(current_user=user)
+        self.assertEquals(len(form.fields), 4)
 
         # Test 2 - Staff user
 
         user = create_staff()
         total_actions = len(Action.objects.all())
 
-        form = AdminActionForm(user=user)
+        form = AdminActionForm(current_user=user)
         self.assertEqual(len(form.fields['action_choice'].queryset), total_actions)
+        self.assertEquals(len(form.fields), 5)
 
     def test_checkout_email(self):
 
@@ -783,7 +783,7 @@ class AdminActionFormTest (TestCase):
                 'email': 'test@test.com', }
 
         with patch('its.items.forms.AdminActionForm.is_valid', return_value=True):
-            form = AdminActionForm(data, user=user)
+            form = AdminActionForm(data, current_user=user)
             form.cleaned_data = data
             form.save(item_pk=new_item.pk, current_user=user)
 
@@ -795,6 +795,7 @@ class AdminActionFormTest (TestCase):
         """
         Test 1 - Check that errors appear when returning item with bad data.
         Test 2 - Check that errors appear when performing other action with bad data.
+        Test 3 - Check that errors appear when action_choice is of type None.
         """
 
         # Test 1 - Check for errors when returning item.
@@ -810,7 +811,7 @@ class AdminActionFormTest (TestCase):
 
         with patch('its.items.forms.AdminActionForm.clean', return_value=data):
                 with patch("its.items.forms.AdminActionForm.add_error") as add_error:
-                    form = AdminActionForm(data, user=user)
+                    form = AdminActionForm(data, current_user=user)
                     form.clean()
 
                     add_error.assert_any_call_with("first_name", "First name is required when returning item.")
@@ -829,10 +830,25 @@ class AdminActionFormTest (TestCase):
 
         with patch('its.items.forms.AdminActionForm.clean', return_value=data):
                 with patch("its.items.forms.AdminActionForm.add_error") as add_error:
-                    form = AdminActionForm(data, user=user)
+                    form = AdminActionForm(data, current_user=user)
                     form.clean()
 
                     add_error.assert_any_call_with("note", "Note required when choosing action of type Other.")
+
+        # Test 3 - Check for errors when action_choice not in dictionary.
+        # Failed as NoneType AttributeError for machine_name in clean on old code.
+        user = create_user()
+
+
+
+        data = {'action_choice': None,
+                'note': "",
+                'first_name': "",
+                'last_name': "",
+                'email': "", }
+
+        form = AdminActionForm(data, current_user=user)
+        self.assertFalse(form.is_valid())
 
     def test_clean_no_errors(self):
 
@@ -853,7 +869,7 @@ class AdminActionFormTest (TestCase):
                 'email': "test@test.com", }
 
         with patch('its.items.forms.AdminActionForm.clean', return_value=data):
-            form = AdminActionForm(data, user=user)
+            form = AdminActionForm(data, current_user=user)
             form.cleaned_data = form.clean()
 
             self.assertTrue(form.cleaned_data['first_name'] == data['first_name'])
@@ -870,7 +886,7 @@ class AdminActionFormTest (TestCase):
                 'email': "", }
 
         with patch('its.items.forms.AdminActionForm.clean', return_value=data):
-            form = AdminActionForm(data, user=user)
+            form = AdminActionForm(data, current_user=user)
             form.cleaned_data = form.clean()
 
             self.assertTrue(form.cleaned_data['note'] == data['note'])
@@ -911,7 +927,7 @@ class AdminActionFormTest (TestCase):
         with patch('its.items.forms.AdminActionForm.is_valid', return_value=True):
             with patch('its.items.forms.AdminActionForm.clean', return_value=data):
 
-                form = AdminActionForm(data, user=user)
+                form = AdminActionForm(data, current_user=user)
                 form.cleaned_data = form.clean()
                 form.save(item_pk=new_item.pk, current_user=user)
                 new_item = Item.objects.get(pk=new_item.pk)
@@ -930,7 +946,7 @@ class AdminActionFormTest (TestCase):
         with patch('its.items.forms.AdminActionForm.is_valid', return_value=True):
             with patch('its.items.forms.AdminActionForm.clean', return_value=data):
 
-                form = AdminActionForm(data, user=user)
+                form = AdminActionForm(data, current_user=user)
                 form.cleaned_data = form.clean()
                 form.save(item_pk=new_item.pk, current_user=user)
                 new_item = Item.objects.get(pk=new_item.pk)
@@ -950,7 +966,7 @@ class AdminActionFormTest (TestCase):
         with patch('its.items.forms.AdminActionForm.is_valid', return_value=True):
             with patch('its.items.forms.AdminActionForm.clean', return_value=data):
 
-                form = AdminActionForm(data, user=user)
+                form = AdminActionForm(data, current_user=user)
                 form.cleaned_data = form.clean()
                 form.save(item_pk=new_item.pk, current_user=user)
 
@@ -976,7 +992,7 @@ class AdminActionFormTest (TestCase):
         with patch('its.items.forms.AdminActionForm.is_valid', return_value=True):
             with patch('its.items.forms.AdminActionForm.clean', return_value=data):
 
-                form = AdminActionForm(data, user=user)
+                form = AdminActionForm(data, current_user=user)
                 form.cleaned_data = form.clean()
                 form.save(item_pk=new_item.pk, current_user=user)
 
@@ -995,7 +1011,7 @@ class AdminActionFormTest (TestCase):
         with patch('its.items.forms.AdminActionForm.is_valid', return_value=True):
             with patch('its.items.forms.AdminActionForm.clean', return_value=data):
 
-                form = AdminActionForm(data, user=user)
+                form = AdminActionForm(data, current_user=user)
                 form.cleaned_data = form.clean()
                 form.save(item_pk=new_item.pk, current_user=user)
 

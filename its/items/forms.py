@@ -59,17 +59,19 @@ class AdminActionForm(forms.Form):
     last_name = forms.CharField(required=False)
     email = forms.EmailField(required=False)
 
-    def __init__(self, *args, user, **kwargs):
+
+    def __init__(self, *args, current_user, **kwargs):
 
         """
         Allow only the return option to be selected by lab attendants.
         """
 
-        self.user = user
+        self.user = current_user
         super(AdminActionForm, self).__init__(*args, **kwargs)
 
         if not self.user.is_staff:
-            self.fields['action_choice'].queryset = self.fields['action_choice'].queryset.filter(machine_name=Action.RETURNED)
+            self.fields.pop('action_choice')
+
 
     def checkout_email(self, item):
 
@@ -101,22 +103,22 @@ class AdminActionForm(forms.Form):
         """
 
         cleaned_data = super().clean()
-        action_choice = cleaned_data.get("action_choice")
+        cleaned_data["action_choice"] = cleaned_data.get("action_choice", Action.objects.get(machine_name=Action.RETURNED))
         note = cleaned_data.get("note")
         first_name = cleaned_data.get("first_name")
         last_name = cleaned_data.get("last_name")
         email = cleaned_data.get("email")
 
-        if (action_choice.machine_name == Action.RETURNED) and not first_name:
+        if (cleaned_data["action_choice"].machine_name == Action.RETURNED) and not first_name:
             self.add_error("first_name", "First name is required when returning item.")
 
-        if (action_choice.machine_name == Action.RETURNED) and not last_name:
+        if (cleaned_data["action_choice"].machine_name == Action.RETURNED) and not last_name:
             self.add_error("last_name", "Last name is required when returning item.")
 
-        if (action_choice.machine_name == Action.RETURNED) and not email:
+        if (cleaned_data["action_choice"].machine_name == Action.RETURNED) and not email:
             self.add_error("email", "Email is required when returning item.")
 
-        if (action_choice.machine_name == Action.OTHER) and not note:
+        if (cleaned_data["action_choice"].machine_name == Action.OTHER) and not note:
             self.add_error("note", "Note required when choosing action of type Other.")
 
         return cleaned_data
@@ -131,13 +133,12 @@ class AdminActionForm(forms.Form):
         If an item is being set to checked in set it's returned_to field to None.
         """
 
-        action_choice = self.cleaned_data["action_choice"]
         item = Item.objects.get(pk=item_pk)
+        action_choice = self.cleaned_data["action_choice"]
         first_name = self.cleaned_data.get("first_name")
         last_name = self.cleaned_data.get("last_name")
         email = self.cleaned_data.get("email")
-        new_action = Action.objects.get(name=self.cleaned_data['action_choice'])
-        new_status = Status(item=item, action_taken=new_action, note=self.cleaned_data['note'], performed_by=current_user).save()
+        new_status = Status(item=item, action_taken=action_choice, note=self.cleaned_data['note'], performed_by=current_user).save()
 
         # If they chose to change status to checked in we need to make sure to
         # set the returned_to field to None
@@ -220,7 +221,7 @@ class AdminItemFilterForm(forms.Form):
 
             if self.cleaned_data['keyword_or_last_name'] is not '':
                 keyword_search = Q(description__icontains = self.cleaned_data['keyword_or_last_name']) | Q(possible_owner__last_name__icontains = self.cleaned_data['keyword_or_last_name'])
-				
+
         else:
             kwargs['is_archived'] = False
 
