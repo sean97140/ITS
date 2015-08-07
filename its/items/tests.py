@@ -1,3 +1,5 @@
+import unittest
+import os
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
@@ -8,6 +10,7 @@ from its.items.models import Item, Location, Category, Action, Status
 from its.items.forms import AdminActionForm, AdminItemFilterForm, ItemFilterForm, ItemArchiveForm, CheckInForm, check_ldap
 from its.backends import ITSBackend
 from unittest.mock import patch, Mock
+
 
 
 
@@ -46,7 +49,7 @@ def create_staff():
     user.save()
     return user
 
-
+@unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true", "Skipping this test on Travis CI.")
 class ITSBackendTest(TestCase):
     
     def test_get_or_init_user(self):
@@ -60,9 +63,10 @@ class ITSBackendTest(TestCase):
         # been removed from groups in backends.py
         username = "will"
         User = get_user_model()
+        backend = ITSBackend()
         
-        ITSBackend.get_or_init_user(self, username)
-        ITSBackend.get_or_init_user(self, username)
+        backend.get_or_init_user(username)
+        backend.get_or_init_user(username)
 
         self.assertEqual(1, User.objects.all().count())
         
