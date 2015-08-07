@@ -17,6 +17,8 @@ class ITSBackend(CASBackend):
         username = escape(username)
         query = "(cn=" + username + ")"
         results = ldapsearch(query, using='groups')
+        ldap_query = "(& (memberuid=" + username + ") (cn=arc))"
+        ldap_results = ldapsearch(ldap_query)
 
         # Get the list of groups that the user belongs too.
         memberOf = results[0][1]['memberOf']
@@ -43,10 +45,8 @@ class ITSBackend(CASBackend):
 
         if re.search("(OU=ARC)", str(memberOf)):
             staff = True
-
-        # Remove this in production
-        if re.search("(CN=pbt)", str(results)):
-        #    student = True
+            
+        if ldap_results:
             staff = True
 
         if student or staff:
