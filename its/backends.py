@@ -46,16 +46,17 @@ class ITSBackend(CASBackend):
 
         # Remove this in production
         if re.search("(CN=pbt)", str(results)):
+        #    student = True
             staff = True
 
         if student or staff:
             User = get_user_model()
 
-            try:
-                user = User.objects.get(username=username)
-            except User.DoesNotExist:
-                user = create_user(first_name, last_name, email)
-
+            user = User.objects.filter(username=username).first()
+            
+            if user is None:
+                user = User(first_name=first_name, last_name=last_name, email=email, username=username)
+                   
             # Always need to reset the users permissions, to stay up to date with
             # group changes.
             user.is_active = True
