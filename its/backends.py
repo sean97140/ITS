@@ -17,6 +17,8 @@ class ITSBackend(CASBackend):
         username = escape(username)
         query = "(cn=" + username + ")"
         results = ldapsearch(query, using='groups')
+        ldap_query = "(& (memberuid=" + username + ") (cn=arc))"
+        ldap_results = ldapsearch(ldap_query)
 
         # Get the list of groups that the user belongs too.
         memberOf = results[0][1]['memberOf']
@@ -43,19 +45,18 @@ class ITSBackend(CASBackend):
 
         if re.search("(OU=ARC)", str(memberOf)):
             staff = True
-
-        # Remove this in production
-        if re.search("(CN=pbt)", str(results)):
+            
+        if ldap_results:
             staff = True
 
         if student or staff:
             User = get_user_model()
 
-            try:
-                user = User.objects.get(username=username)
-            except User.DoesNotExist:
-                user = create_user(first_name, last_name, email)
-
+            user = User.objects.filter(username=username).first()
+            
+            if user is None:
+                user = User(first_name=first_name, last_name=last_name, email=email, username=username)
+                   
             # Always need to reset the users permissions, to stay up to date with
             # group changes.
             user.is_active = True

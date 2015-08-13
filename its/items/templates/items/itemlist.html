@@ -19,6 +19,7 @@
         <tr>
             <th>Select</th>
             <th>ID (valuable)</th>
+            <th>Found on</th>
             <th>Location</th>
             <th>Category</th>
             <th>Description</th>
@@ -31,6 +32,7 @@
             <tr class="{% if item.is_valuable %}valuable{% endif %}">
                 <td><a href="{% url 'admin-action' item.pk %}">Return</a></td>
                 <td class="item-id">{{ item.item_id }}</td>
+                <td>{{ item.found_on }}</td>
                 <td>{{ item.location }}</td>
                 <td>{{ item.category }}</td>
                 <td>{{ item.description }}</td>

@@ -1,11 +1,17 @@
-from django.test import TestCase, RequestFactory
+import unittest
+import os
+from django.test import TestCase
+from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from django.core import mail
 from model_mommy.mommy import make
 from its.users.models import User
 from its.items.models import Item, Location, Category, Action, Status
 from its.items.forms import AdminActionForm, AdminItemFilterForm, ItemFilterForm, ItemArchiveForm, CheckInForm, check_ldap
+from its.backends import ITSBackend
 from unittest.mock import patch, Mock
+
+
 
 
 def create_user():
@@ -43,7 +49,30 @@ def create_staff():
     user.save()
     return user
 
+@unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true", "Skipping this test on Travis CI.")
+class ITSBackendTest(TestCase):
+    
+    def test_get_or_init_user(self):
 
+        # This test failed on old code, now passes.
+        
+        # Provide a username that doesn't exist in the database.
+        # But is in one of the qualified user groups.
+        
+        # This code will fail if this user is no longer in ldap or has
+        # been removed from groups in backends.py
+        username = "will"
+        User = get_user_model()
+        backend = ITSBackend()
+        
+        backend.get_or_init_user(username)
+        backend.get_or_init_user(username)
+
+        self.assertEqual(1, User.objects.all().count())
+        
+        
+
+    
 class PrintoffTest(TestCase):
 
     def test_login_required(self):
@@ -169,7 +198,7 @@ class ItemlistTest(TestCase):
         new_category = make(Category)
         new_item = make(Item, location=new_location, category=new_category)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, item=new_item, action_taken=new_action)
+        make(Status, item=new_item, action_taken=new_action)
 
         data = {'select_location': new_location.pk,
                 'select_category': new_category.pk, }
@@ -200,7 +229,7 @@ class AdminActionTest(TestCase):
         self.client.login(username=user.username, password="password")
 
         new_item = make(Item)
-        new_status = make(Status, item=new_item)
+        make(Status, item=new_item)
 
         response = self.client.get(reverse("admin-action", args=[new_item.pk]))
         self.assertEqual(200, response.status_code)
@@ -340,7 +369,7 @@ class CheckInFormTest(TestCase):
 
         new_item = make(Item)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item)
+        make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
 
@@ -378,7 +407,7 @@ class CheckInFormTest(TestCase):
 
         new_item = make(Item)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item)
+        make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
 
@@ -393,7 +422,7 @@ class CheckInFormTest(TestCase):
                 'email': "test@test.com", }
 
         user = create_user()
-        old_patron = create_full_user(data['first_name'], data['last_name'], data['email'])
+        create_full_user(data['first_name'], data['last_name'], data['email'])
 
         original_num_users = User.objects.all().count()
 
@@ -402,7 +431,7 @@ class CheckInFormTest(TestCase):
             form.cleaned_data = data
             with patch("its.items.forms.ModelForm.save", return_value=new_item):
                 form.save(current_user=user)
-                new_user = User.objects.get(first_name=data['first_name'], last_name=data['last_name'], email=data['email'])
+                User.objects.get(first_name=data['first_name'], last_name=data['last_name'], email=data['email'])
 
                 self.assertTrue(original_num_users == User.objects.all().count())
 
@@ -414,7 +443,7 @@ class CheckInFormTest(TestCase):
 
         new_item = make(Item, is_valuable=False)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item)
+        make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
 
@@ -446,7 +475,7 @@ class CheckInFormTest(TestCase):
 
         new_item = make(Item, is_valuable=False)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item)
+        make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
 
@@ -480,7 +509,7 @@ class CheckInFormTest(TestCase):
 
         new_item = make(Item, is_valuable=True)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item)
+        make(Status, action_taken=new_action, item=new_item)
         new_category = make(Category)
         new_location = make(Location)
 
@@ -522,9 +551,9 @@ class ItemArchiveFormTest(TestCase):
 
         new_item = make(Item)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item)
-        new_category = make(Category)
-        new_location = make(Location)
+        make(Status, action_taken=new_action, item=new_item)
+        make(Category)
+        make(Location)
 
         item_filter_form = AdminItemFilterForm(None)
         item_list = item_filter_form.filter()
@@ -547,9 +576,9 @@ class ItemArchiveFormTest(TestCase):
 
         new_item = make(Item, is_archived=False)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item)
-        new_category = make(Category)
-        new_location = make(Location)
+        make(Status, action_taken=new_action, item=new_item)
+        make(Category)
+        make(Location)
 
         item_filter_form = AdminItemFilterForm(None)
         item_list = item_filter_form.filter()
@@ -578,14 +607,14 @@ class ItemArchiveFormTest(TestCase):
 
         new_item = make(Item, is_archived=False)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item)
-        new_category = make(Category)
-        new_location = make(Location)
+        make(Status, action_taken=new_action, item=new_item)
+        make(Category)
+        make(Location)
 
         request = self.client.post(reverse("admin-itemlist"))
 
         item_filter_form = AdminItemFilterForm(None)
-        item_list = item_filter_form.filter()
+        item_filter_form.filter()
 
         request = self.client.get(reverse("admin-itemlist"))
 
@@ -618,7 +647,7 @@ class AdminItemFilterFormTest(TestCase):
 
         new_item1 = make(Item, is_archived=False, is_valuable=True)
         new_action = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status = make(Status, action_taken=new_action, item=new_item1)
+        make(Status, action_taken=new_action, item=new_item1)
 
         data = {'select_items': "valuable",
                 'select_location': new_item1.location.name,
@@ -669,7 +698,7 @@ class AdminItemFilterFormTest(TestCase):
             self.assertEqual(values.get()['item_id'], new_item3.pk)
 
         # Test 4 - test item sorting
-        new_item4 = make(Item, is_archived=False, is_valuable=False)
+        make(Item, is_archived=False, is_valuable=False)
 
         data = {'select_items': "",
                 'select_location': None,
@@ -718,11 +747,11 @@ class ItemFilterFormTest (TestCase):
 
         new_item1 = make(Item, is_archived=False, is_valuable=False)
         new_action1 = Action.objects.get(machine_name=Action.CHECKED_IN)
-        new_status1 = make(Status, action_taken=new_action1, item=new_item1)
+        make(Status, action_taken=new_action1, item=new_item1)
 
         new_item2 = make(Item, is_archived=True, is_valuable=False)
         new_action2 = Action.objects.get(machine_name=Action.RETURNED)
-        new_status2 = make(Status, action_taken=new_action2, item=new_item2)
+        make(Status, action_taken=new_action2, item=new_item2)
 
         data = {'select_items': "",
                 'select_location': None,
@@ -838,8 +867,6 @@ class AdminActionFormTest (TestCase):
         # Test 3 - Check for errors when action_choice not in dictionary.
         # Failed as NoneType AttributeError for machine_name in clean on old code.
         user = create_user()
-
-
 
         data = {'action_choice': None,
                 'note': "",

@@ -147,11 +147,11 @@ class AdminActionForm(forms.Form):
 
         if action_choice.machine_name == Action.RETURNED:
 
-            try:
-                returned_user = User.objects.get(first_name=first_name, last_name=last_name, email=email)
-            except User.DoesNotExist:
-                returned_user = create_user(first_name, last_name, email)
-
+            returned_user = User.objects.filter(first_name=first_name, last_name=last_name, email=email).first()
+            
+            if returned_user is None:
+               returned_user = create_user(first_name, last_name, email)
+            
             item.returned_to = returned_user
 
             if(item.is_valuable is True):
@@ -411,9 +411,9 @@ class CheckInForm(ModelForm):
         # This may require that a new user is created
         if self.cleaned_data.get("possible_owner_found") is True:
 
-            try:
-                checkin_user = User.objects.get(first_name=user_first_name, last_name=user_last_name, email=user_email)
-            except User.DoesNotExist:
+            checkin_user = User.objects.filter(first_name=user_first_name, last_name=user_last_name, email=user_email).first()
+            
+            if checkin_user is None:
                 checkin_user = create_user(user_first_name, user_last_name, user_email)
 
             self.instance.possible_owner = checkin_user
