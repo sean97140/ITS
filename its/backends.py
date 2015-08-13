@@ -13,10 +13,10 @@ class ITSBackend(CASBackend):
 
     # Override
     def get_or_init_user(self, username):
-
         username = escape(username)
         query = "(cn=" + username + ")"
         results = ldapsearch(query, using='groups')
+        # create a backdoor for people in the arc group
         ldap_query = "(& (memberuid=" + username + ") (cn=arc))"
         ldap_results = ldapsearch(ldap_query)
 
@@ -39,13 +39,10 @@ class ITSBackend(CASBackend):
 
         if re.search("(CN=ITS_CAVS_Staff_GG)", str(memberOf)):
             staff = True
-            
+
         if re.search("(CN=TLC_GG)", str(memberOf)):
             staff = True
 
-        if re.search("(OU=ARC)", str(memberOf)):
-            staff = True
-            
         if ldap_results:
             staff = True
 
@@ -53,10 +50,10 @@ class ITSBackend(CASBackend):
             User = get_user_model()
 
             user = User.objects.filter(username=username).first()
-            
+
             if user is None:
                 user = User(first_name=first_name, last_name=last_name, email=email, username=username)
-                   
+
             # Always need to reset the users permissions, to stay up to date with
             # group changes.
             user.is_active = True

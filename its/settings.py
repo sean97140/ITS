@@ -104,18 +104,14 @@ INSTALLED_APPS = (
 
 LDAP = {
     'default': {
-                'host': variable("LDAP_HOST", default="ldap://ldap-bulk.oit.pdx.edu"),
-                'username': variable("LDAP_USERNAME", default='uid=rethinkwebsite,ou=service,dc=pdx,dc=edu'),
-                'password': variable("LDAP_PASSWORD", default=''),
-                'search_dn': variable("LDAP_SEARCH_DB", default='ou=people,dc=pdx,dc=edu'),
-                'tls': variable('LDAP_TLS', default=True),
-                'ca_file': PROJECT_DIR('ca.crt'),
+        'host': "ldap://ldap-bulk.oit.pdx.edu",
+        'search_dn': 'dc=pdx,dc=edu',
     },
     'groups': {
-               'host': variable("AD_SERVER", default="ldaps://oitdcpsu02.psu.ds.pdx.edu"),
-               'username': variable("AD_USERNAME", default="lostandfound_svc"),
-               'password': variable("AD_PASSWORD", default=''),
-               'search_dn': variable("AD_SEARCH_BASE", default="ou=people,dc=psu,dc=ds,dc=pdx,dc=edu"),
+        'host': "ldaps://oitdcpsu02.psu.ds.pdx.edu",
+        'username': variable("AD_USERNAME", default="lostandfound_svc"),
+        'password': variable("AD_PASSWORD", default=''),
+        'search_dn': "ou=people,dc=psu,dc=ds,dc=pdx,dc=edu",
     }
 }
 
