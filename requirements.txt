@@ -3,6 +3,7 @@ setuptools
 psycopg2
 django-cloak
 pytz
+django-local-settings
 git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils
 ldap3
 djangocas
