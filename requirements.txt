@@ -4,7 +4,7 @@ psycopg2
 django-cloak
 pytz
 django-local-settings
-git+https://github.com/PSU-OIT-ARC/django-arcutils.git#egg=django-arcutils
+git+https://github.com/PSU-OIT-ARC/django-arcutils.git@4a74dbe14ed607e5d3281e72851b74e2e901c6ad
 ldap3
 djangocas
 mock
