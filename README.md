@@ -10,4 +10,4 @@ Staff members can perform many different actions on inventory items, such as mar
 
 ## Installation
 
-Download project, go into project root and .\Makefile
+Download project, go into project root and run make
